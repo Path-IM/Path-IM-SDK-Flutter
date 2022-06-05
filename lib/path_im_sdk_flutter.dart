@@ -1,0 +1,1 @@
+library path_im_sdk_flutter;
