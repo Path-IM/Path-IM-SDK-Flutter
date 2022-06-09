@@ -1,5 +1,8 @@
 library path_im_sdk_flutter;
 
+export 'package:path_im_core_flutter/src/constant/conversation_type.dart';
+export 'package:path_im_core_flutter/src/listener/connect_listener.dart';
+
 export 'src/callback/group_id_callback.dart';
 
 export 'src/constant/content_type.dart';
