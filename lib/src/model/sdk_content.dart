@@ -24,20 +24,47 @@ class TypingContent {
 
 /// 读取消息
 class ReadContent {
-  List<String> msgIDs;
+  List<String> clientMsgIDList;
 
   ReadContent({
-    required this.msgIDs,
+    required this.clientMsgIDList,
   });
 
   static ReadContent decode(String content) {
     Map<String, dynamic> map = json.decode(content);
-    return ReadContent(msgIDs: map["msgIDs"]);
+    return ReadContent(clientMsgIDList: map["clientMsgIDList"]);
   }
 
   List<int> encode() {
     Map<String, dynamic> map = {
-      "msgIDs": msgIDs,
+      "clientMsgIDList": clientMsgIDList,
+    };
+    return SDKTool.encode(json.encode(map));
+  }
+}
+
+/// 撤回消息
+class RevokeContent {
+  String clientMsgID;
+  String revokeContent;
+
+  RevokeContent({
+    required this.clientMsgID,
+    required this.revokeContent,
+  });
+
+  static RevokeContent decode(String content) {
+    Map<String, dynamic> map = json.decode(content);
+    return RevokeContent(
+      clientMsgID: map["clientMsgID"],
+      revokeContent: map["revokeContent"],
+    );
+  }
+
+  List<int> encode() {
+    Map<String, dynamic> map = {
+      "clientMsgID": clientMsgID,
+      "revokeContent": revokeContent,
     };
     return SDKTool.encode(json.encode(map));
   }

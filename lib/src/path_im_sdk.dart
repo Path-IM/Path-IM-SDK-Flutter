@@ -6,8 +6,9 @@ import 'package:path_im_sdk_flutter/src/database/sdk_database.dart';
 import 'package:path_im_sdk_flutter/src/listener/conversation_listener.dart';
 import 'package:path_im_sdk_flutter/src/listener/message_listener.dart';
 import 'package:path_im_sdk_flutter/src/listener/read_receipt_listener.dart';
+import 'package:path_im_sdk_flutter/src/listener/revoke_receipt_listener.dart';
 import 'package:path_im_sdk_flutter/src/listener/total_unread_listener.dart';
-import 'package:path_im_sdk_flutter/src/listener/user_typing_listener.dart';
+import 'package:path_im_sdk_flutter/src/listener/typing_receipt_listener.dart';
 import 'package:path_im_sdk_flutter/src/manager/sdk_manager.dart';
 
 class PathIMSDK {
@@ -36,8 +37,9 @@ class PathIMSDK {
     ConnectListener? connectListener,
     ConversationListener? conversationListener,
     MessageListener? messageListener,
-    UserTypingListener? userTypingListener,
+    TypingReceiptListener? typingReceiptListener,
     ReadReceiptListener? readReceiptListener,
+    RevokeReceiptListener? revokeReceiptListener,
     TotalUnreadListener? totalUnreadListener,
   }) {
     if (Platform.isWindows || Platform.isLinux) {
@@ -48,8 +50,9 @@ class PathIMSDK {
       groupIDCallback: groupIDCallback,
       conversationListener: conversationListener,
       messageListener: messageListener,
-      userTypingListener: userTypingListener,
+      typingReceiptListener: typingReceiptListener,
       readReceiptListener: readReceiptListener,
+      revokeReceiptListener: revokeReceiptListener,
       totalUnreadListener: totalUnreadListener,
     );
     _sdkManager!.init();

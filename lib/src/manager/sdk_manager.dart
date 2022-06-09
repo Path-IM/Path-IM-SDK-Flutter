@@ -6,8 +6,9 @@ import 'package:path_im_sdk_flutter/src/database/sdk_database.dart';
 import 'package:path_im_sdk_flutter/src/listener/conversation_listener.dart';
 import 'package:path_im_sdk_flutter/src/listener/message_listener.dart';
 import 'package:path_im_sdk_flutter/src/listener/read_receipt_listener.dart';
+import 'package:path_im_sdk_flutter/src/listener/revoke_receipt_listener.dart';
 import 'package:path_im_sdk_flutter/src/listener/total_unread_listener.dart';
-import 'package:path_im_sdk_flutter/src/listener/user_typing_listener.dart';
+import 'package:path_im_sdk_flutter/src/listener/typing_receipt_listener.dart';
 import 'package:path_im_sdk_flutter/src/model/conversation_model.dart';
 import 'package:path_im_sdk_flutter/src/model/message_model.dart';
 import 'package:path_im_sdk_flutter/src/model/sdk_content.dart';
@@ -20,16 +21,18 @@ class SDKManager {
   final GroupIDCallback? groupIDCallback;
   final ConversationListener? conversationListener;
   final MessageListener? messageListener;
-  final UserTypingListener? userTypingListener;
+  final TypingReceiptListener? typingReceiptListener;
   final ReadReceiptListener? readReceiptListener;
+  final RevokeReceiptListener? revokeReceiptListener;
   final TotalUnreadListener? totalUnreadListener;
 
   SDKManager({
     this.groupIDCallback,
     this.conversationListener,
     this.messageListener,
-    this.userTypingListener,
+    this.typingReceiptListener,
     this.readReceiptListener,
+    this.revokeReceiptListener,
     this.totalUnreadListener,
   });
 
@@ -197,18 +200,18 @@ class SDKManager {
   void _updateTyping(MessageModel message) {
     if (message.sendID == userID) return;
     TypingContent content = TypingContent.decode(message.content);
-    userTypingListener?.typing(message.sendID, content.focus);
+    typingReceiptListener?.typing(message.sendID, content.focus);
   }
 
   /// 读取消息
   void _updateRead(String conversationID, MessageModel message) async {
     ReadContent content = ReadContent.decode(message.content);
-    if (content.msgIDs.isEmpty) return;
-    for (String msgID in content.msgIDs) {
+    if (content.clientMsgIDList.isEmpty) return;
+    for (String clientMsgID in content.clientMsgIDList) {
       List<Map<String, dynamic>>? list = await messageTable.query(
         conversationID,
         where: "clientMsgID = ?",
-        whereArgs: [msgID],
+        whereArgs: [clientMsgID],
       );
       if (list == null || list.isEmpty) continue;
       MessageModel messageModel = MessageModel.fromJson(list.first);
@@ -229,7 +232,7 @@ class SDKManager {
           "readCount": readCount,
         },
         where: "clientMsgID = ?",
-        whereArgs: [msgID],
+        whereArgs: [clientMsgID],
       );
       if (value != null) {
         if (message.sendID == userID) {
@@ -253,11 +256,55 @@ class SDKManager {
           }
         } else {
           if (message.conversationType == ConversationType.single) {
-            readReceiptListener?.singleReceipt(msgID);
+            readReceiptListener?.single(clientMsgID);
           } else {
-            readReceiptListener?.groupReceipt(msgID, readCount);
+            readReceiptListener?.group(clientMsgID, readCount);
           }
         }
+      }
+    }
+  }
+
+  /// 撤回消息
+  void _updateRevoke(String conversationID, MessageModel message) async {
+    RevokeContent content = RevokeContent.decode(message.content);
+    String clientMsgID = content.clientMsgID;
+    List<Map<String, dynamic>>? list = await messageTable.query(
+      conversationID,
+      where: "clientMsgID = ?",
+      whereArgs: [clientMsgID],
+    );
+    if (list == null || list.isEmpty) return;
+    int? value = await messageTable.update(
+      conversationID,
+      {
+        "markRevoke": true,
+        "revokeContent": content.revokeContent,
+      },
+      where: "clientMsgID = ?",
+      whereArgs: [clientMsgID],
+    );
+    if (value != null) {
+      revokeReceiptListener?.revoke(clientMsgID);
+      List<Map<String, dynamic>>? list = await conversationTable.query(
+        where: "conversationID = ?",
+        whereArgs: [conversationID],
+      );
+      if (list == null || list.isEmpty) return;
+      ConversationModel conversationModel = ConversationModel.fromJson(
+        list.first,
+      );
+      MessageModel? messageModel = conversationModel.message;
+      if (messageModel != null && messageModel.clientMsgID == clientMsgID) {
+        messageModel.markRevoke = true;
+        messageModel.revokeContent = content.revokeContent;
+        conversationModel.message = messageModel;
+        await conversationTable.update(
+          conversationModel.toJson(),
+          where: "conversationID = ?",
+          whereArgs: [conversationID],
+        );
+        conversationListener?.update(conversationModel);
       }
     }
   }
@@ -267,9 +314,6 @@ class SDKManager {
     int value = await conversationTable.queryTotalUnread();
     totalUnreadListener?.totalUnread(value);
   }
-
-  /// 撤回消息
-  void _updateRevoke(String conversationID, MessageModel message) {}
 
   /// 发送消息回执
   void sendMsgReceipt(

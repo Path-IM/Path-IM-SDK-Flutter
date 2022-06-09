@@ -1,6 +1,6 @@
 /// 总未读数监听
 class TotalUnreadListener {
-  final Function(int count)? onTotalUnread;
+  final Function(int count)? onTotalUnread; // 未读总数
 
   TotalUnreadListener({
     this.onTotalUnread,
