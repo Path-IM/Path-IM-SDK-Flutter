@@ -1,6 +1,13 @@
 import 'dart:convert';
+import 'package:uuid/uuid.dart';
 
 class SDKTool {
+  static const Uuid _uuid = Uuid();
+
+  static String getClientMsgID() {
+    return _uuid.v1().replaceAll("-", "");
+  }
+
   static String decode(dynamic content) {
     if (content is List<int>) {
       return utf8.decode(content);

@@ -56,8 +56,8 @@ class PathIMSDK {
       totalUnreadListener: totalUnreadListener,
     );
     _sdkManager!.init();
-    conversationManager = ConversationManager(sdkManager: _sdkManager!);
-    messageManager = MessageManager(sdkManager: _sdkManager!);
+    messageManager = MessageManager(_sdkManager!);
+    conversationManager = ConversationManager(_sdkManager!, messageManager);
     ConfigTable configTable = _sdkManager!.configTable;
     PathIMCore.instance.init(
       wsUrl: wsUrl,

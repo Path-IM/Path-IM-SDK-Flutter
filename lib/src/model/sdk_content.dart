@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:path_im_sdk_flutter/src/tool/sdk_tool.dart';
 
 /// 正在输入
 class TypingContent {
@@ -9,16 +8,15 @@ class TypingContent {
     required this.focus,
   });
 
-  static TypingContent decode(String content) {
+  static TypingContent fromJson(String content) {
     Map<String, dynamic> map = json.decode(content);
     return TypingContent(focus: map["focus"]);
   }
 
-  List<int> encode() {
-    Map<String, dynamic> map = {
+  String toJson() {
+    return {
       "focus": focus,
-    };
-    return SDKTool.encode(json.encode(map));
+    }.toString();
   }
 }
 
@@ -30,16 +28,15 @@ class ReadContent {
     required this.clientMsgIDList,
   });
 
-  static ReadContent decode(String content) {
+  static ReadContent fromJson(String content) {
     Map<String, dynamic> map = json.decode(content);
     return ReadContent(clientMsgIDList: map["clientMsgIDList"]);
   }
 
-  List<int> encode() {
-    Map<String, dynamic> map = {
+  String toJson() {
+    return {
       "clientMsgIDList": clientMsgIDList,
-    };
-    return SDKTool.encode(json.encode(map));
+    }.toString();
   }
 }
 
@@ -53,7 +50,7 @@ class RevokeContent {
     required this.revokeContent,
   });
 
-  static RevokeContent decode(String content) {
+  static RevokeContent fromJson(String content) {
     Map<String, dynamic> map = json.decode(content);
     return RevokeContent(
       clientMsgID: map["clientMsgID"],
@@ -61,11 +58,130 @@ class RevokeContent {
     );
   }
 
-  List<int> encode() {
-    Map<String, dynamic> map = {
+  String toJson() {
+    return {
       "clientMsgID": clientMsgID,
       "revokeContent": revokeContent,
-    };
-    return SDKTool.encode(json.encode(map));
+    }.toString();
+  }
+}
+
+/// 图片消息
+class PictureContent {
+  String pictureUrl;
+  String? extend;
+
+  PictureContent({
+    required this.pictureUrl,
+    this.extend,
+  });
+
+  static PictureContent fromJson(String content) {
+    Map<String, dynamic> map = json.decode(content);
+    return PictureContent(
+      pictureUrl: map["pictureUrl"],
+      extend: map["extend"],
+    );
+  }
+
+  String toJson() {
+    return {
+      "pictureUrl": pictureUrl,
+      "extend": extend,
+    }.toString();
+  }
+}
+
+/// 语音消息
+class VoiceContent {
+  String voiceUrl;
+  int duration;
+  String? extend;
+
+  VoiceContent({
+    required this.voiceUrl,
+    required this.duration,
+    this.extend,
+  });
+
+  static VoiceContent fromJson(String content) {
+    Map<String, dynamic> map = json.decode(content);
+    return VoiceContent(
+      voiceUrl: map["voiceUrl"],
+      duration: map["duration"],
+      extend: map["extend"],
+    );
+  }
+
+  String toJson() {
+    return {
+      "voiceUrl": voiceUrl,
+      "duration": duration,
+      "extend": extend,
+    }.toString();
+  }
+}
+
+/// 视频消息
+class VideoContent {
+  String videoUrl;
+  int duration;
+  String? extend;
+
+  VideoContent({
+    required this.videoUrl,
+    required this.duration,
+    this.extend,
+  });
+
+  static VideoContent fromJson(String content) {
+    Map<String, dynamic> map = json.decode(content);
+    return VideoContent(
+      videoUrl: map["videoUrl"],
+      duration: map["duration"],
+      extend: map["extend"],
+    );
+  }
+
+  String toJson() {
+    return {
+      "videoUrl": videoUrl,
+      "duration": duration,
+      "extend": extend,
+    }.toString();
+  }
+}
+
+/// 文件消息
+class FileContent {
+  String fileUrl;
+  String type;
+  int size;
+  String? extend;
+
+  FileContent({
+    required this.fileUrl,
+    required this.type,
+    required this.size,
+    this.extend,
+  });
+
+  static FileContent fromJson(String content) {
+    Map<String, dynamic> map = json.decode(content);
+    return FileContent(
+      fileUrl: map["fileUrl"],
+      type: map["type"],
+      size: map["size"],
+      extend: map["extend"],
+    );
+  }
+
+  String toJson() {
+    return {
+      "fileUrl": fileUrl,
+      "type": type,
+      "size": size,
+      "extend": extend,
+    }.toString();
   }
 }

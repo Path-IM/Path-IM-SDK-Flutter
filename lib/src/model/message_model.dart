@@ -1,3 +1,4 @@
+import 'package:path_im_core_flutter/path_im_core_flutter.dart';
 import 'package:path_im_sdk_flutter/src/tool/sdk_tool.dart';
 
 class MessageModel {
@@ -12,8 +13,8 @@ class MessageModel {
   int clientTime;
   int? serverTime;
   int? seq;
-  OfflinePushModel? offlinePush;
-  MsgOptionsModel msgOptions;
+  OfflinePush? offlinePush;
+  MsgOptions msgOptions;
 
   int? sendStatus;
 
@@ -44,7 +45,7 @@ class MessageModel {
     this.revokeContent,
   });
 
-  static MessageModel fromJson(Map<String, dynamic> json) {
+  static MessageModel fromJsonMap(Map<String, dynamic> json) {
     return MessageModel(
       clientMsgID: json["clientMsgID"],
       serverMsgID: json["serverMsgID"],
@@ -57,8 +58,8 @@ class MessageModel {
       clientTime: json["clientTime"],
       serverTime: json["serverTime"],
       seq: json["seq"],
-      offlinePush: OfflinePushModel.fromJson(json["offlinePush"]),
-      msgOptions: MsgOptionsModel.fromJson(json["msgOptions"]),
+      offlinePush: OfflinePush.fromJson(json["offlinePush"].toString()),
+      msgOptions: MsgOptions.fromJson(json["msgOptions"].toString()),
       sendStatus: json["sendStatus"],
       markRead: json["markRead"],
       readCount: json["readCount"],
@@ -67,7 +68,7 @@ class MessageModel {
     );
   }
 
-  Map<String, dynamic> toJson() {
+  Map<String, dynamic> toJsonMap() {
     return {
       "clientMsgID": clientMsgID,
       "serverMsgID": serverMsgID,
@@ -80,82 +81,13 @@ class MessageModel {
       "clientTime": clientTime,
       "serverTime": serverTime,
       "seq": seq,
-      "offlinePush": offlinePush?.toJson(),
-      "msgOptions": msgOptions.toJson(),
+      "offlinePush": offlinePush?.writeToJsonMap(),
+      "msgOptions": msgOptions.writeToJsonMap(),
       "sendStatus": sendStatus,
       "markRead": markRead,
       "readCount": readCount,
       "markRevoke": markRevoke,
       "revokeContent": revokeContent,
-    };
-  }
-}
-
-class OfflinePushModel {
-  String title;
-  String desc;
-  String ex;
-  String iOSPushSound;
-  bool iOSBadgeCount;
-
-  OfflinePushModel({
-    required this.title,
-    required this.desc,
-    required this.ex,
-    required this.iOSPushSound,
-    required this.iOSBadgeCount,
-  });
-
-  static OfflinePushModel fromJson(Map<String, dynamic> json) =>
-      OfflinePushModel(
-        title: json["title"],
-        desc: json["desc"],
-        ex: json["ex"],
-        iOSPushSound: json["iOSPushSound"],
-        iOSBadgeCount: json["iOSBadgeCount"],
-      );
-
-  Map<String, dynamic> toJson() {
-    return {
-      "title": title,
-      "desc": desc,
-      "ex": ex,
-      "iOSPushSound": iOSPushSound,
-      "iOSBadgeCount": iOSBadgeCount,
-    };
-  }
-}
-
-class MsgOptionsModel {
-  bool persistent;
-  bool history;
-  bool local;
-  bool updateUnreadCount;
-  bool updateConversation;
-
-  MsgOptionsModel({
-    required this.persistent,
-    required this.history,
-    required this.local,
-    required this.updateUnreadCount,
-    required this.updateConversation,
-  });
-
-  static MsgOptionsModel fromJson(Map<String, dynamic> json) => MsgOptionsModel(
-        persistent: json["persistent"],
-        history: json["history"],
-        local: json["local"],
-        updateUnreadCount: json["updateUnreadCount"],
-        updateConversation: json["updateConversation"],
-      );
-
-  Map<String, dynamic> toJson() {
-    return {
-      "persistent": persistent,
-      "history": history,
-      "local": local,
-      "updateUnreadCount": updateUnreadCount,
-      "updateConversation": updateConversation,
     };
   }
 }

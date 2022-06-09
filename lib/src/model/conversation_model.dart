@@ -5,7 +5,7 @@ class ConversationModel {
   MessageModel? message;
   int? messageTime;
   int? unreadCount;
-  DraftTextModel? draftText;
+  DraftText? draftText;
   bool? isPinned;
 
   ConversationModel({
@@ -17,41 +17,41 @@ class ConversationModel {
     this.isPinned,
   });
 
-  static ConversationModel fromJson(Map<String, dynamic> json) =>
+  static ConversationModel fromJsonMap(Map<String, dynamic> json) =>
       ConversationModel(
         conversationID: json["conversationID"],
-        message: MessageModel.fromJson(json["message"]),
+        message: MessageModel.fromJsonMap(json["message"]),
         messageTime: json["messageTime"],
         unreadCount: json["unreadCount"],
-        draftText: DraftTextModel.fromJson(json["draftText"]),
+        draftText: DraftText.fromJsonMap(json["draftText"]),
         isPinned: json["isPinned"],
       );
 
-  Map<String, dynamic> toJson() => {
+  Map<String, dynamic> toJsonMap() => {
         "conversationID": conversationID,
-        "message": message?.toJson(),
+        "message": message?.toJsonMap(),
         "messageTime": messageTime,
         "unreadCount": unreadCount,
-        "draftText": draftText?.toJson(),
+        "draftText": draftText?.toJsonMap(),
         "isPinned": isPinned,
       };
 }
 
-class DraftTextModel {
+class DraftText {
   String text;
   int time;
 
-  DraftTextModel({
+  DraftText({
     required this.text,
     required this.time,
   });
 
-  static DraftTextModel fromJson(Map<String, dynamic> json) => DraftTextModel(
+  static DraftText fromJsonMap(Map<String, dynamic> json) => DraftText(
         text: json["text"],
         time: json["time"],
       );
 
-  Map<String, dynamic> toJson() {
+  Map<String, dynamic> toJsonMap() {
     return {
       "text": text,
       "time": time,

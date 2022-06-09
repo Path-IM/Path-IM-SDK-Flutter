@@ -69,7 +69,7 @@ class SDKManager {
 
   /// 接收消息
   void receiveMsg(MsgData msg) async {
-    MessageModel message = MessageModel.fromJson(
+    MessageModel message = MessageModel.fromJsonMap(
       msg.writeToJsonMap(),
     );
     String conversationID;
@@ -144,7 +144,7 @@ class SDKManager {
     } else {
       await messageTable.insert(
         conversationID,
-        message.toJson(),
+        message.toJsonMap(),
       );
     }
   }
@@ -154,13 +154,15 @@ class SDKManager {
     String conversationID,
     MessageModel message,
   ) async {
-    MsgOptionsModel msgOptions = message.msgOptions;
+    MsgOptions msgOptions = message.msgOptions;
     List<Map<String, dynamic>>? list = await conversationTable.query(
       where: "conversationID = ?",
       whereArgs: [conversationID],
     );
     if (list != null && list.isNotEmpty) {
-      ConversationModel conversation = ConversationModel.fromJson(list.first);
+      ConversationModel conversation = ConversationModel.fromJsonMap(
+        list.first,
+      );
       if (msgOptions.updateConversation) {
         conversation.message = message;
         conversation.messageTime = message.serverTime ?? message.clientTime;
@@ -170,7 +172,7 @@ class SDKManager {
         conversation.unreadCount = ++unreadCount;
       }
       await conversationTable.update(
-        conversation.toJson(),
+        conversation.toJsonMap(),
         where: "conversationID = ?",
         whereArgs: [conversationID],
       );
@@ -189,7 +191,7 @@ class SDKManager {
         conversation.unreadCount = 0;
       }
       await conversationTable.insert(
-        conversation.toJson(),
+        conversation.toJsonMap(),
       );
       conversationListener?.added(conversation);
     }
@@ -199,13 +201,13 @@ class SDKManager {
   /// 正在输入
   void _updateTyping(MessageModel message) {
     if (message.sendID == userID) return;
-    TypingContent content = TypingContent.decode(message.content);
+    TypingContent content = TypingContent.fromJson(message.content);
     typingReceiptListener?.typing(message.sendID, content.focus);
   }
 
   /// 读取消息
   void _updateRead(String conversationID, MessageModel message) async {
-    ReadContent content = ReadContent.decode(message.content);
+    ReadContent content = ReadContent.fromJson(message.content);
     if (content.clientMsgIDList.isEmpty) return;
     for (String clientMsgID in content.clientMsgIDList) {
       List<Map<String, dynamic>>? list = await messageTable.query(
@@ -214,7 +216,7 @@ class SDKManager {
         whereArgs: [clientMsgID],
       );
       if (list == null || list.isEmpty) continue;
-      MessageModel messageModel = MessageModel.fromJson(list.first);
+      MessageModel messageModel = MessageModel.fromJsonMap(list.first);
       if (messageModel.markRead == true) continue;
       int readCount = 0;
       if (message.conversationType == ConversationType.single) {
@@ -241,7 +243,7 @@ class SDKManager {
             whereArgs: [conversationID],
           );
           if (list == null || list.isEmpty) return;
-          ConversationModel conversationModel = ConversationModel.fromJson(
+          ConversationModel conversationModel = ConversationModel.fromJsonMap(
             list.first,
           );
           int? unreadCount = conversationModel.unreadCount;
@@ -267,7 +269,7 @@ class SDKManager {
 
   /// 撤回消息
   void _updateRevoke(String conversationID, MessageModel message) async {
-    RevokeContent content = RevokeContent.decode(message.content);
+    RevokeContent content = RevokeContent.fromJson(message.content);
     String clientMsgID = content.clientMsgID;
     List<Map<String, dynamic>>? list = await messageTable.query(
       conversationID,
@@ -291,7 +293,7 @@ class SDKManager {
         whereArgs: [conversationID],
       );
       if (list == null || list.isEmpty) return;
-      ConversationModel conversationModel = ConversationModel.fromJson(
+      ConversationModel conversationModel = ConversationModel.fromJsonMap(
         list.first,
       );
       MessageModel? messageModel = conversationModel.message;
@@ -300,7 +302,7 @@ class SDKManager {
         messageModel.revokeContent = content.revokeContent;
         conversationModel.message = messageModel;
         await conversationTable.update(
-          conversationModel.toJson(),
+          conversationModel.toJsonMap(),
           where: "conversationID = ?",
           whereArgs: [conversationID],
         );
