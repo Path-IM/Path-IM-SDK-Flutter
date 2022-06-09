@@ -69,9 +69,7 @@ class SDKManager {
 
   /// 接收消息
   void receiveMsg(MsgData msg) async {
-    MessageModel message = MessageModel.fromJsonMap(
-      msg.writeToJsonMap(),
-    );
+    MessageModel message = MessageModel.fromProtobuf(msg);
     String conversationID;
     if (message.conversationType == ConversationType.single) {
       if (message.seq != null && message.seq != 0) {
@@ -243,17 +241,17 @@ class SDKManager {
             whereArgs: [conversationID],
           );
           if (list == null || list.isEmpty) return;
-          ConversationModel conversationModel = ConversationModel.fromJsonMap(
+          ConversationModel conversation = ConversationModel.fromJsonMap(
             list.first,
           );
-          int? unreadCount = conversationModel.unreadCount;
+          int? unreadCount = conversation.unreadCount;
           if (unreadCount != null && unreadCount > 0) {
             await conversationTable.update(
               {"unreadCount": --unreadCount},
               where: "conversationID = ?",
               whereArgs: [conversationID],
             );
-            conversationListener?.update(conversationModel);
+            conversationListener?.update(conversation);
             _calculateTotalUnread();
           }
         } else {
@@ -293,20 +291,20 @@ class SDKManager {
         whereArgs: [conversationID],
       );
       if (list == null || list.isEmpty) return;
-      ConversationModel conversationModel = ConversationModel.fromJsonMap(
+      ConversationModel conversation = ConversationModel.fromJsonMap(
         list.first,
       );
-      MessageModel? messageModel = conversationModel.message;
+      MessageModel? messageModel = conversation.message;
       if (messageModel != null && messageModel.clientMsgID == clientMsgID) {
         messageModel.markRevoke = true;
         messageModel.revokeContent = content.revokeContent;
-        conversationModel.message = messageModel;
+        conversation.message = messageModel;
         await conversationTable.update(
-          conversationModel.toJsonMap(),
+          conversation.toJsonMap(),
           where: "conversationID = ?",
           whereArgs: [conversationID],
         );
-        conversationListener?.update(conversationModel);
+        conversationListener?.update(conversation);
       }
     }
   }

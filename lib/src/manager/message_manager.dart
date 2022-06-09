@@ -218,7 +218,6 @@ class MessageManager {
     OfflinePush? offlinePush,
     required MsgOptions msgOptions,
   }) async {
-    assert(contentType > ContentType.file && contentType < ContentType.typing);
     String clientMsgID = SDKTool.getClientMsgID();
     int clientTime = DateTime.now().millisecondsSinceEpoch;
     String conversationID;

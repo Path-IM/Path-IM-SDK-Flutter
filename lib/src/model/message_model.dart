@@ -45,6 +45,24 @@ class MessageModel {
     this.revokeContent,
   });
 
+  static MessageModel fromProtobuf(MsgData msg) {
+    return MessageModel(
+      clientMsgID: msg.clientMsgID,
+      serverMsgID: msg.serverMsgID,
+      conversationType: msg.conversationType,
+      sendID: msg.sendID,
+      receiveID: msg.receiveID,
+      contentType: msg.contentType,
+      content: SDKTool.decode(msg.content),
+      atUserIDList: msg.atUserIDList,
+      clientTime: msg.clientTime.toInt(),
+      serverTime: msg.serverTime.toInt(),
+      seq: msg.seq,
+      offlinePush: msg.offlinePush,
+      msgOptions: msg.msgOptions,
+    );
+  }
+
   static MessageModel fromJsonMap(Map<String, dynamic> json) {
     return MessageModel(
       clientMsgID: json["clientMsgID"],
