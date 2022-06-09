@@ -152,7 +152,7 @@ class SDKManager {
     String conversationID,
     MessageModel message,
   ) async {
-    MsgOptions msgOptions = message.msgOptions;
+    MsgOptionsModel msgOptions = message.msgOptions;
     List<Map<String, dynamic>>? list = await conversationTable.query(
       where: "conversationID = ?",
       whereArgs: [conversationID],

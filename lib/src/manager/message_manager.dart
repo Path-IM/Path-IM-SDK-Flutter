@@ -48,7 +48,7 @@ class MessageManager {
     required String receiveID,
     required String text,
     List<String>? atUserIDList,
-    OfflinePush? offlinePush,
+    OfflinePushModel? offlinePush,
   }) {
     return sendCustom(
       conversationType: conversationType,
@@ -57,7 +57,7 @@ class MessageManager {
       content: text,
       atUserIDList: atUserIDList,
       offlinePush: offlinePush,
-      msgOptions: MsgOptions(
+      msgOptions: MsgOptionsModel(
         persistent: true,
         history: true,
         local: true,
@@ -73,7 +73,7 @@ class MessageManager {
     required String receiveID,
     required PictureContent content,
     List<String>? atUserIDList,
-    OfflinePush? offlinePush,
+    OfflinePushModel? offlinePush,
   }) {
     return sendCustom(
       conversationType: conversationType,
@@ -82,7 +82,7 @@ class MessageManager {
       content: content.toJson(),
       atUserIDList: atUserIDList,
       offlinePush: offlinePush,
-      msgOptions: MsgOptions(
+      msgOptions: MsgOptionsModel(
         persistent: true,
         history: true,
         local: true,
@@ -98,7 +98,7 @@ class MessageManager {
     required String receiveID,
     required VoiceContent content,
     List<String>? atUserIDList,
-    OfflinePush? offlinePush,
+    OfflinePushModel? offlinePush,
   }) {
     return sendCustom(
       conversationType: conversationType,
@@ -107,7 +107,7 @@ class MessageManager {
       content: content.toJson(),
       atUserIDList: atUserIDList,
       offlinePush: offlinePush,
-      msgOptions: MsgOptions(
+      msgOptions: MsgOptionsModel(
         persistent: true,
         history: true,
         local: true,
@@ -123,7 +123,7 @@ class MessageManager {
     required String receiveID,
     required VideoContent content,
     List<String>? atUserIDList,
-    OfflinePush? offlinePush,
+    OfflinePushModel? offlinePush,
   }) {
     return sendCustom(
       conversationType: conversationType,
@@ -132,7 +132,7 @@ class MessageManager {
       content: content.toJson(),
       atUserIDList: atUserIDList,
       offlinePush: offlinePush,
-      msgOptions: MsgOptions(
+      msgOptions: MsgOptionsModel(
         persistent: true,
         history: true,
         local: true,
@@ -148,7 +148,7 @@ class MessageManager {
     required String receiveID,
     required FileContent content,
     List<String>? atUserIDList,
-    OfflinePush? offlinePush,
+    OfflinePushModel? offlinePush,
   }) {
     return sendCustom(
       conversationType: conversationType,
@@ -157,7 +157,7 @@ class MessageManager {
       content: content.toJson(),
       atUserIDList: atUserIDList,
       offlinePush: offlinePush,
-      msgOptions: MsgOptions(
+      msgOptions: MsgOptionsModel(
         persistent: true,
         history: true,
         local: true,
@@ -177,7 +177,7 @@ class MessageManager {
       receiveID: receiveID,
       contentType: ContentType.typing,
       content: TypingContent(focus: focus).toJson(),
-      msgOptions: MsgOptions(
+      msgOptions: MsgOptionsModel(
         persistent: false,
         history: false,
         local: false,
@@ -198,7 +198,7 @@ class MessageManager {
       receiveID: receiveID,
       contentType: ContentType.read,
       content: ReadContent(clientMsgIDList: clientMsgIDList).toJson(),
-      msgOptions: MsgOptions(
+      msgOptions: MsgOptionsModel(
         persistent: true,
         history: true,
         local: false,
@@ -215,37 +215,15 @@ class MessageManager {
     required int contentType,
     required String content,
     List<String>? atUserIDList,
-    OfflinePush? offlinePush,
-    required MsgOptions msgOptions,
+    OfflinePushModel? offlinePush,
+    required MsgOptionsModel msgOptions,
   }) async {
     String clientMsgID = SDKTool.getClientMsgID();
     int clientTime = DateTime.now().millisecondsSinceEpoch;
     String conversationID;
     if (conversationType == ConversationType.single) {
-      PathIMCore.instance.sendSingleMsg(
-        clientMsgID: clientMsgID,
-        sendID: _sdkManager.userID,
-        receiveID: receiveID,
-        contentType: contentType,
-        content: utf8.encode(content),
-        atUserIDList: atUserIDList,
-        clientTime: Int64(clientTime),
-        offlinePush: offlinePush,
-        msgOptions: msgOptions,
-      );
       conversationID = receiveID;
     } else {
-      PathIMCore.instance.sendGroupMsg(
-        clientMsgID: clientMsgID,
-        sendID: _sdkManager.userID,
-        receiveID: receiveID,
-        contentType: contentType,
-        content: utf8.encode(content),
-        atUserIDList: atUserIDList,
-        clientTime: Int64(clientTime),
-        offlinePush: offlinePush,
-        msgOptions: msgOptions,
-      );
       conversationID = "group-$receiveID";
     }
     MessageModel messageModel = MessageModel(
@@ -265,6 +243,59 @@ class MessageManager {
       conversationID,
       messageModel.toJsonMap(),
     );
+    if (conversationType == ConversationType.single) {
+      PathIMCore.instance.sendSingleMsg(
+        clientMsgID: clientMsgID,
+        sendID: _sdkManager.userID,
+        receiveID: receiveID,
+        contentType: contentType,
+        content: utf8.encode(content),
+        atUserIDList: atUserIDList,
+        clientTime: Int64(clientTime),
+        offlinePush: offlinePush != null
+            ? OfflinePush(
+                title: offlinePush.title,
+                desc: offlinePush.desc,
+                ex: offlinePush.ex,
+                iOSPushSound: offlinePush.iOSPushSound,
+                iOSBadgeCount: offlinePush.iOSBadgeCount,
+              )
+            : null,
+        msgOptions: MsgOptions(
+          persistent: msgOptions.persistent,
+          history: msgOptions.history,
+          local: msgOptions.local,
+          updateUnreadCount: msgOptions.updateUnreadCount,
+          updateConversation: msgOptions.updateConversation,
+        ),
+      );
+    } else {
+      PathIMCore.instance.sendGroupMsg(
+        clientMsgID: clientMsgID,
+        sendID: _sdkManager.userID,
+        receiveID: receiveID,
+        contentType: contentType,
+        content: utf8.encode(content),
+        atUserIDList: atUserIDList,
+        clientTime: Int64(clientTime),
+        offlinePush: offlinePush != null
+            ? OfflinePush(
+                title: offlinePush.title,
+                desc: offlinePush.desc,
+                ex: offlinePush.ex,
+                iOSPushSound: offlinePush.iOSPushSound,
+                iOSBadgeCount: offlinePush.iOSBadgeCount,
+              )
+            : null,
+        msgOptions: MsgOptions(
+          persistent: msgOptions.persistent,
+          history: msgOptions.history,
+          local: msgOptions.local,
+          updateUnreadCount: msgOptions.updateUnreadCount,
+          updateConversation: msgOptions.updateConversation,
+        ),
+      );
+    }
     return messageModel;
   }
 

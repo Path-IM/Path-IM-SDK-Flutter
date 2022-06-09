@@ -13,8 +13,8 @@ class MessageModel {
   int clientTime;
   int? serverTime;
   int? seq;
-  OfflinePush? offlinePush;
-  MsgOptions msgOptions;
+  OfflinePushModel? offlinePush;
+  MsgOptionsModel msgOptions;
 
   int? sendStatus;
 
@@ -58,8 +58,8 @@ class MessageModel {
       clientTime: msg.clientTime.toInt(),
       serverTime: msg.serverTime.toInt(),
       seq: msg.seq,
-      offlinePush: msg.offlinePush,
-      msgOptions: msg.msgOptions,
+      offlinePush: OfflinePushModel.fromProtobuf(msg.offlinePush),
+      msgOptions: MsgOptionsModel.fromProtobuf(msg.msgOptions),
     );
   }
 
@@ -76,8 +76,8 @@ class MessageModel {
       clientTime: json["clientTime"],
       serverTime: json["serverTime"],
       seq: json["seq"],
-      offlinePush: OfflinePush.fromJson(json["offlinePush"].toString()),
-      msgOptions: MsgOptions.fromJson(json["msgOptions"].toString()),
+      offlinePush: OfflinePushModel.fromJsonMap(json["offlinePush"]),
+      msgOptions: MsgOptionsModel.fromJsonMap(json["msgOptions"]),
       sendStatus: json["sendStatus"],
       markRead: json["markRead"],
       readCount: json["readCount"],
@@ -99,13 +99,105 @@ class MessageModel {
       "clientTime": clientTime,
       "serverTime": serverTime,
       "seq": seq,
-      "offlinePush": offlinePush?.writeToJsonMap(),
-      "msgOptions": msgOptions.writeToJsonMap(),
+      "offlinePush": offlinePush?.toJsonMap(),
+      "msgOptions": msgOptions.toJsonMap(),
       "sendStatus": sendStatus,
       "markRead": markRead,
       "readCount": readCount,
       "markRevoke": markRevoke,
       "revokeContent": revokeContent,
+    };
+  }
+}
+
+class OfflinePushModel {
+  String title;
+  String desc;
+  String ex;
+  String iOSPushSound;
+  bool iOSBadgeCount;
+
+  OfflinePushModel({
+    required this.title,
+    required this.desc,
+    required this.ex,
+    required this.iOSPushSound,
+    required this.iOSBadgeCount,
+  });
+
+  static OfflinePushModel fromProtobuf(OfflinePush offlinePush) {
+    return OfflinePushModel(
+      title: offlinePush.title,
+      desc: offlinePush.desc,
+      ex: offlinePush.ex,
+      iOSPushSound: offlinePush.iOSPushSound,
+      iOSBadgeCount: offlinePush.iOSBadgeCount,
+    );
+  }
+
+  static OfflinePushModel fromJsonMap(Map<String, dynamic> json) {
+    return OfflinePushModel(
+      title: json["title"],
+      desc: json["desc"],
+      ex: json["ex"],
+      iOSPushSound: json["iOSPushSound"],
+      iOSBadgeCount: json["iOSBadgeCount"],
+    );
+  }
+
+  Map<String, dynamic> toJsonMap() {
+    return {
+      "title": title,
+      "desc": desc,
+      "ex": ex,
+      "iOSPushSound": iOSPushSound,
+      "iOSBadgeCount": iOSBadgeCount,
+    };
+  }
+}
+
+class MsgOptionsModel {
+  bool persistent;
+  bool history;
+  bool local;
+  bool updateUnreadCount;
+  bool updateConversation;
+
+  MsgOptionsModel({
+    required this.persistent,
+    required this.history,
+    required this.local,
+    required this.updateUnreadCount,
+    required this.updateConversation,
+  });
+
+  static MsgOptionsModel fromProtobuf(MsgOptions msgOptions) {
+    return MsgOptionsModel(
+      persistent: msgOptions.persistent,
+      history: msgOptions.history,
+      local: msgOptions.local,
+      updateUnreadCount: msgOptions.updateUnreadCount,
+      updateConversation: msgOptions.updateConversation,
+    );
+  }
+
+  static MsgOptionsModel fromJsonMap(Map<String, dynamic> json) {
+    return MsgOptionsModel(
+      persistent: json["persistent"],
+      history: json["history"],
+      local: json["local"],
+      updateUnreadCount: json["updateUnreadCount"],
+      updateConversation: json["updateConversation"],
+    );
+  }
+
+  Map<String, dynamic> toJsonMap() {
+    return {
+      "persistent": persistent,
+      "history": history,
+      "local": local,
+      "updateUnreadCount": updateUnreadCount,
+      "updateConversation": updateConversation,
     };
   }
 }
