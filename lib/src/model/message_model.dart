@@ -14,9 +14,14 @@ class MessageModel {
   int? seq;
   OfflinePushModel? offlinePush;
   MsgOptionsModel msgOptions;
+
   int? sendStatus;
-  MsgReadModel? msgRead;
-  MsgRevokeModel? msgRevoke;
+
+  bool? markRead;
+  int? readCount;
+
+  bool? markRevoke;
+  String? revokeContent;
 
   MessageModel({
     required this.clientMsgID,
@@ -33,8 +38,10 @@ class MessageModel {
     this.offlinePush,
     required this.msgOptions,
     this.sendStatus,
-    this.msgRead,
-    this.msgRevoke,
+    this.markRead,
+    this.readCount,
+    this.markRevoke,
+    this.revokeContent,
   });
 
   static MessageModel fromJson(Map<String, dynamic> json) {
@@ -53,8 +60,10 @@ class MessageModel {
       offlinePush: OfflinePushModel.fromJson(json["offlinePush"]),
       msgOptions: MsgOptionsModel.fromJson(json["msgOptions"]),
       sendStatus: json["sendStatus"],
-      msgRead: MsgReadModel.fromJson(json["msgRead"]),
-      msgRevoke: MsgRevokeModel.fromJson(json["msgRevoke"]),
+      markRead: json["markRead"],
+      readCount: json["readCount"],
+      markRevoke: json["markRevoke"],
+      revokeContent: json["revokeContent"],
     );
   }
 
@@ -74,8 +83,10 @@ class MessageModel {
       "offlinePush": offlinePush?.toJson(),
       "msgOptions": msgOptions.toJson(),
       "sendStatus": sendStatus,
-      "msgRead": msgRead?.toJson(),
-      "msgRevoke": msgRevoke?.toJson(),
+      "markRead": markRead,
+      "readCount": readCount,
+      "markRevoke": markRevoke,
+      "revokeContent": revokeContent,
     };
   }
 }
@@ -145,50 +156,6 @@ class MsgOptionsModel {
       "local": local,
       "updateUnreadCount": updateUnreadCount,
       "updateConversation": updateConversation,
-    };
-  }
-}
-
-class MsgReadModel {
-  bool isRead;
-  int count;
-
-  MsgReadModel({
-    required this.isRead,
-    required this.count,
-  });
-
-  static MsgReadModel fromJson(Map<String, dynamic> json) => MsgReadModel(
-        isRead: json["isRead"],
-        count: json["count"],
-      );
-
-  Map<String, dynamic> toJson() {
-    return {
-      "isRead": isRead,
-      "count": count,
-    };
-  }
-}
-
-class MsgRevokeModel {
-  bool isRevoke;
-  String content;
-
-  MsgRevokeModel({
-    required this.isRevoke,
-    required this.content,
-  });
-
-  static MsgRevokeModel fromJson(Map<String, dynamic> json) => MsgRevokeModel(
-        isRevoke: json["isRevoke"],
-        content: json["content"],
-      );
-
-  Map<String, dynamic> toJson() {
-    return {
-      "isRevoke": isRevoke,
-      "content": content,
     };
   }
 }

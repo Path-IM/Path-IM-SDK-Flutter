@@ -1,9 +1,13 @@
 import 'dart:io';
 import 'package:path_im_core_flutter/path_im_core_flutter.dart';
 import 'package:path_im_sdk_flutter/src/callback/group_id_callback.dart';
+import 'package:path_im_sdk_flutter/src/constant/send_status.dart';
 import 'package:path_im_sdk_flutter/src/database/sdk_database.dart';
 import 'package:path_im_sdk_flutter/src/listener/conversation_listener.dart';
 import 'package:path_im_sdk_flutter/src/listener/message_listener.dart';
+import 'package:path_im_sdk_flutter/src/listener/read_receipt_listener.dart';
+import 'package:path_im_sdk_flutter/src/listener/total_unread_listener.dart';
+import 'package:path_im_sdk_flutter/src/listener/user_typing_listener.dart';
 import 'package:path_im_sdk_flutter/src/manager/sdk_manager.dart';
 
 class PathIMSDK {
@@ -32,6 +36,9 @@ class PathIMSDK {
     ConnectListener? connectListener,
     ConversationListener? conversationListener,
     MessageListener? messageListener,
+    UserTypingListener? userTypingListener,
+    ReadReceiptListener? readReceiptListener,
+    TotalUnreadListener? totalUnreadListener,
   }) {
     if (Platform.isWindows || Platform.isLinux) {
       sqfliteFfiInit();
@@ -41,6 +48,9 @@ class PathIMSDK {
       groupIDCallback: groupIDCallback,
       conversationListener: conversationListener,
       messageListener: messageListener,
+      userTypingListener: userTypingListener,
+      readReceiptListener: readReceiptListener,
+      totalUnreadListener: totalUnreadListener,
     );
     _sdkManager!.init();
     conversationManager = ConversationManager(sdkManager: _sdkManager!);
@@ -69,9 +79,26 @@ class PathIMSDK {
         onReceive: _sdkManager!.receiveMsg,
       ),
       sendMsgListener: SendMsgListener(
-        onSuccess: _sdkManager!.sendSuccess,
-        onFailed: _sdkManager!.sendFailed,
-        onLimit: _sdkManager!.sendLimit,
+        onSuccess: (sendMsgResp) {
+          _sdkManager!.sendMsgReceipt(
+            sendMsgResp,
+            SendStatus.success,
+          );
+        },
+        onFailed: (sendMsgResp, errMsg) {
+          _sdkManager!.sendMsgReceipt(
+            sendMsgResp,
+            SendStatus.failed,
+            errMsg: errMsg,
+          );
+        },
+        onLimit: (sendMsgResp, errMsg) {
+          _sdkManager!.sendMsgReceipt(
+            sendMsgResp,
+            SendStatus.limit,
+            errMsg: errMsg,
+          );
+        },
       ),
     );
   }

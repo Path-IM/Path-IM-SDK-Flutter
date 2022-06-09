@@ -24,8 +24,10 @@ class MessageTable {
       "offlinePush TEXT,"
       "msgOptions TEXT,"
       "sendStatus INTEGER,"
-      "msgRead TEXT,"
-      "msgRevoke TEXT)",
+      "markRead BOOLEAN,"
+      "readCount INTEGER,"
+      "markRevoke BOOLEAN,"
+      "revokeContent TEXT)",
     );
   }
 
