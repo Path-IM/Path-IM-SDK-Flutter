@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:path_im_sdk_flutter/src/model/message_model.dart';
 
 class ConversationModel {
@@ -17,22 +18,22 @@ class ConversationModel {
     this.isPinned,
   });
 
-  static ConversationModel fromJsonMap(Map<String, dynamic> json) =>
+  static ConversationModel fromJsonMap(Map<String, dynamic> map) =>
       ConversationModel(
-        conversationID: json["conversationID"],
-        message: MessageModel.fromJsonMap(json["message"]),
-        messageTime: json["messageTime"],
-        unreadCount: json["unreadCount"],
-        draftText: DraftText.fromJsonMap(json["draftText"]),
-        isPinned: json["isPinned"],
+        conversationID: map["conversationID"],
+        message: MessageModel.fromJson(map["message"]),
+        messageTime: map["messageTime"],
+        unreadCount: map["unreadCount"],
+        draftText: DraftText.fromJson(map["draftText"]),
+        isPinned: map["isPinned"],
       );
 
   Map<String, dynamic> toJsonMap() => {
         "conversationID": conversationID,
-        "message": message?.toJsonMap(),
+        "message": message?.toJson(),
         "messageTime": messageTime,
         "unreadCount": unreadCount,
-        "draftText": draftText?.toJsonMap(),
+        "draftText": draftText?.toJson(),
         "isPinned": isPinned,
       };
 }
@@ -46,15 +47,18 @@ class DraftText {
     required this.time,
   });
 
-  static DraftText fromJsonMap(Map<String, dynamic> json) => DraftText(
-        text: json["text"],
-        time: json["time"],
-      );
+  static DraftText fromJson(String source) {
+    Map<String, dynamic> map = json.decode(source);
+    return DraftText(
+      text: map["text"],
+      time: map["time"],
+    );
+  }
 
-  Map<String, dynamic> toJsonMap() {
-    return {
+  String toJson() {
+    return json.encode({
       "text": text,
       "time": time,
-    };
+    });
   }
 }

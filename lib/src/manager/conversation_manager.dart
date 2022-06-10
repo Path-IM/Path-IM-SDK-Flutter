@@ -52,7 +52,7 @@ class ConversationManager {
       );
     }
     int? count = await _conversationTable.update(
-      {"draftText": draftText?.toJsonMap()},
+      {"draftText": draftText?.toJson()},
       where: "conversationID = ?",
       whereArgs: [conversationID],
     );

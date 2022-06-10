@@ -14,9 +14,9 @@ class TypingContent {
   }
 
   String toJson() {
-    return {
+    return json.encode({
       "focus": focus,
-    }.toString();
+    });
   }
 }
 
@@ -34,9 +34,9 @@ class ReadContent {
   }
 
   String toJson() {
-    return {
+    return json.encode({
       "clientMsgIDList": clientMsgIDList,
-    }.toString();
+    });
   }
 }
 
@@ -59,10 +59,10 @@ class RevokeContent {
   }
 
   String toJson() {
-    return {
+    return json.encode({
       "clientMsgID": clientMsgID,
       "revokeContent": revokeContent,
-    }.toString();
+    });
   }
 }
 
@@ -85,10 +85,10 @@ class PictureContent {
   }
 
   String toJson() {
-    return {
+    return json.encode({
       "pictureUrl": pictureUrl,
       "extend": extend,
-    }.toString();
+    });
   }
 }
 
@@ -114,11 +114,11 @@ class VoiceContent {
   }
 
   String toJson() {
-    return {
+    return json.encode({
       "voiceUrl": voiceUrl,
       "duration": duration,
       "extend": extend,
-    }.toString();
+    });
   }
 }
 
@@ -144,11 +144,11 @@ class VideoContent {
   }
 
   String toJson() {
-    return {
+    return json.encode({
       "videoUrl": videoUrl,
       "duration": duration,
       "extend": extend,
-    }.toString();
+    });
   }
 }
 
@@ -177,11 +177,11 @@ class FileContent {
   }
 
   String toJson() {
-    return {
+    return json.encode({
       "fileUrl": fileUrl,
       "type": type,
       "size": size,
       "extend": extend,
-    }.toString();
+    });
   }
 }

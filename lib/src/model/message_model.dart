@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:path_im_core_flutter/path_im_core_flutter.dart';
 import 'package:path_im_sdk_flutter/src/tool/sdk_tool.dart';
 
@@ -63,26 +64,34 @@ class MessageModel {
     );
   }
 
-  static MessageModel fromJsonMap(Map<String, dynamic> json) {
+  static MessageModel fromJson(String source) {
+    return fromJsonMap(json.decode(source));
+  }
+
+  String toJson() {
+    return json.encode(toJsonMap());
+  }
+
+  static MessageModel fromJsonMap(Map<String, dynamic> map) {
     return MessageModel(
-      clientMsgID: json["clientMsgID"],
-      serverMsgID: json["serverMsgID"],
-      conversationType: json["conversationType"],
-      sendID: json["sendID"],
-      receiveID: json["receiveID"],
-      contentType: json["contentType"],
-      content: SDKTool.decode(json["content"]),
-      atUserIDList: json["atUserIDList"],
-      clientTime: json["clientTime"],
-      serverTime: json["serverTime"],
-      seq: json["seq"],
-      offlinePush: OfflinePushModel.fromJsonMap(json["offlinePush"]),
-      msgOptions: MsgOptionsModel.fromJsonMap(json["msgOptions"]),
-      sendStatus: json["sendStatus"],
-      markRead: json["markRead"],
-      readCount: json["readCount"],
-      markRevoke: json["markRevoke"],
-      revokeContent: json["revokeContent"],
+      clientMsgID: map["clientMsgID"],
+      serverMsgID: map["serverMsgID"],
+      conversationType: map["conversationType"],
+      sendID: map["sendID"],
+      receiveID: map["receiveID"],
+      contentType: map["contentType"],
+      content: SDKTool.decode(map["content"]),
+      atUserIDList: map["atUserIDList"],
+      clientTime: map["clientTime"],
+      serverTime: map["serverTime"],
+      seq: map["seq"],
+      offlinePush: OfflinePushModel.fromJson(map["offlinePush"]),
+      msgOptions: MsgOptionsModel.fromJson(map["msgOptions"]),
+      sendStatus: map["sendStatus"],
+      markRead: map["markRead"],
+      readCount: map["readCount"],
+      markRevoke: map["markRevoke"],
+      revokeContent: map["revokeContent"],
     );
   }
 
@@ -99,8 +108,8 @@ class MessageModel {
       "clientTime": clientTime,
       "serverTime": serverTime,
       "seq": seq,
-      "offlinePush": offlinePush?.toJsonMap(),
-      "msgOptions": msgOptions.toJsonMap(),
+      "offlinePush": offlinePush?.toJson(),
+      "msgOptions": msgOptions.toJson(),
       "sendStatus": sendStatus,
       "markRead": markRead,
       "readCount": readCount,
@@ -135,24 +144,25 @@ class OfflinePushModel {
     );
   }
 
-  static OfflinePushModel fromJsonMap(Map<String, dynamic> json) {
+  static OfflinePushModel fromJson(String source) {
+    Map<String, dynamic> map = json.decode(source);
     return OfflinePushModel(
-      title: json["title"],
-      desc: json["desc"],
-      ex: json["ex"],
-      iOSPushSound: json["iOSPushSound"],
-      iOSBadgeCount: json["iOSBadgeCount"],
+      title: map["title"],
+      desc: map["desc"],
+      ex: map["ex"],
+      iOSPushSound: map["iOSPushSound"],
+      iOSBadgeCount: map["iOSBadgeCount"],
     );
   }
 
-  Map<String, dynamic> toJsonMap() {
-    return {
+  String toJson() {
+    return json.encode({
       "title": title,
       "desc": desc,
       "ex": ex,
       "iOSPushSound": iOSPushSound,
       "iOSBadgeCount": iOSBadgeCount,
-    };
+    });
   }
 }
 
@@ -181,23 +191,24 @@ class MsgOptionsModel {
     );
   }
 
-  static MsgOptionsModel fromJsonMap(Map<String, dynamic> json) {
+  static MsgOptionsModel fromJson(String source) {
+    Map<String, dynamic> map = json.decode(source);
     return MsgOptionsModel(
-      persistent: json["persistent"],
-      history: json["history"],
-      local: json["local"],
-      updateUnreadCount: json["updateUnreadCount"],
-      updateConversation: json["updateConversation"],
+      persistent: map["persistent"],
+      history: map["history"],
+      local: map["local"],
+      updateUnreadCount: map["updateUnreadCount"],
+      updateConversation: map["updateConversation"],
     );
   }
 
-  Map<String, dynamic> toJsonMap() {
-    return {
+  String toJson() {
+    return json.encode({
       "persistent": persistent,
       "history": history,
       "local": local,
       "updateUnreadCount": updateUnreadCount,
       "updateConversation": updateConversation,
-    };
+    });
   }
 }
