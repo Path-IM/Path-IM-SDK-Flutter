@@ -24,7 +24,9 @@ class ConversationModel {
         message: MessageModel.fromJson(map["message"]),
         messageTime: map["messageTime"],
         unreadCount: map["unreadCount"],
-        draftText: DraftText.fromJson(map["draftText"]),
+        draftText: map["draftText"] != null
+            ? DraftText.fromJson(map["draftText"])
+            : null,
         isPinned: map["isPinned"],
       );
 
