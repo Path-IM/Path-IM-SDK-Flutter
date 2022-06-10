@@ -43,12 +43,14 @@ class MessageTable {
       );
     }
 
+    int? id;
     try {
-      return await insert();
+      id = await insert();
     } catch (_) {
       await _create(tableName);
-      return await insert();
+      id = await insert();
     }
+    return id;
   }
 
   Future<int?> delete(
@@ -64,12 +66,14 @@ class MessageTable {
       );
     }
 
+    int? count;
     try {
-      return await delete();
+      count = await delete();
     } catch (_) {
       await _create(tableName);
-      return await delete();
+      count = await delete();
     }
+    return count;
   }
 
   Future<int?> update(
@@ -88,12 +92,14 @@ class MessageTable {
       );
     }
 
+    int? count;
     try {
-      return await update();
+      count = await update();
     } catch (_) {
       await _create(tableName);
-      return await update();
+      count = await update();
     }
+    return count;
   }
 
   Future<List<Map<String, dynamic>>?> query(
@@ -115,11 +121,13 @@ class MessageTable {
       );
     }
 
+    List<Map<String, dynamic>>? list;
     try {
-      return await query();
+      list = await query();
     } catch (_) {
       await _create(tableName);
-      return await query();
+      list = await query();
     }
+    return list;
   }
 }

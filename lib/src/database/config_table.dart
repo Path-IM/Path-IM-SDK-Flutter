@@ -28,7 +28,10 @@ class ConfigTable {
   Future<int?> updateMaxSeq(int maxSeq) async {
     return await _database?.update(
       tableName,
-      {"maxSeq": maxSeq},
+      {
+        "k": "maxSeq",
+        "v": maxSeq,
+      },
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
   }
@@ -59,7 +62,10 @@ class ConfigTable {
   Future<int?> updateGroupMaxSeq(String groupID, int groupMaxSeq) async {
     return await _database?.update(
       tableName,
-      {"groupMaxSeq-$groupID": groupMaxSeq},
+      {
+        "k": "groupMaxSeq-$groupID",
+        "v": groupMaxSeq,
+      },
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
   }

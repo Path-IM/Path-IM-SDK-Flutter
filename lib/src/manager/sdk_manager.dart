@@ -337,7 +337,7 @@ class SDKManager {
     if (status == SendStatus.success) {
       values = {
         "serverMsgID": sendMsgResp.serverMsgID,
-        "serverTime": sendMsgResp.serverTime,
+        "serverTime": sendMsgResp.serverTime.toInt(),
       };
       messageListener?.sendSuccess(sendMsgResp.clientMsgID);
     } else if (status == SendStatus.failed) {
