@@ -118,7 +118,7 @@ class ConversationManager {
   }) async {
     String receiveID = conversationID;
     if (conversationType == ConversationType.group) {
-      receiveID = receiveID.replaceFirst("group-", "");
+      receiveID = receiveID.replaceFirst("group_", "");
     }
     List<MessageModel> list = await _messageManager.getMessageList(
       conversationID: conversationID,

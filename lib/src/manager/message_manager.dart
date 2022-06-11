@@ -224,7 +224,7 @@ class MessageManager {
     if (conversationType == ConversationType.single) {
       conversationID = receiveID;
     } else {
-      conversationID = "group-$receiveID";
+      conversationID = "group_$receiveID";
     }
     MessageModel messageModel = MessageModel(
       clientMsgID: clientMsgID,

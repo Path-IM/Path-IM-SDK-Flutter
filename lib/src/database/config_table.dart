@@ -50,7 +50,7 @@ class ConfigTable {
   Future<int?> initGroupMaxSeq(String groupID) async {
     return await _database?.insert(
       tableName,
-      {"k": "groupMaxSeq-$groupID", "v": 0},
+      {"k": "groupMaxSeq_$groupID", "v": 0},
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
   }
@@ -60,7 +60,7 @@ class ConfigTable {
       tableName,
       {"v": groupMaxSeq},
       where: "k = ?",
-      whereArgs: ["groupMaxSeq-$groupID"],
+      whereArgs: ["groupMaxSeq_$groupID"],
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
   }
@@ -69,7 +69,7 @@ class ConfigTable {
     List<Map<String, dynamic>>? list = await _database?.query(
       tableName,
       where: "k = ?",
-      whereArgs: ["groupMaxSeq-$groupID"],
+      whereArgs: ["groupMaxSeq_$groupID"],
     );
     if (list != null && list.isNotEmpty) {
       return list.first["v"];

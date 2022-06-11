@@ -96,7 +96,7 @@ class SDKManager {
         );
         configTable.updateGroupMaxSeq(message.receiveID, message.seq!);
       }
-      conversationID = "group-${message.receiveID}";
+      conversationID = "group_${message.receiveID}";
     }
     message.sendStatus = SendStatus.success;
     await _updateMessage(conversationID, message);
@@ -326,7 +326,7 @@ class SDKManager {
     if (sendMsgResp.conversationType == ConversationType.single) {
       conversationID = sendMsgResp.receiveID;
     } else {
-      conversationID = "group-${sendMsgResp.receiveID}";
+      conversationID = "group_${sendMsgResp.receiveID}";
     }
     List<Map<String, dynamic>>? list = await messageTable.query(
       conversationID,
