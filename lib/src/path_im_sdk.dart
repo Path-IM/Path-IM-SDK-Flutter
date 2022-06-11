@@ -30,8 +30,9 @@ class PathIMSDK {
   /// 初始化
   void init({
     required String wsUrl,
-    bool autoPullMsg = true,
-    Duration pulseTime = const Duration(seconds: 30),
+    bool autoPull = true,
+    Duration pullTime = const Duration(seconds: 30),
+    bool autoRetry = true,
     Duration retryTime = const Duration(seconds: 3),
     GroupIDCallback? groupIDCallback,
     ConnectListener? connectListener,
@@ -61,8 +62,9 @@ class PathIMSDK {
     ConfigTable configTable = _sdkManager!.configTable;
     PathIMCore.instance.init(
       wsUrl: wsUrl,
-      autoPullMsg: autoPullMsg,
-      pulseTime: pulseTime,
+      autoPull: autoPull,
+      pullTime: pullTime,
+      autoRetry: autoRetry,
       retryTime: retryTime,
       userCallback: UserCallback(
         onMaxSeq: () async {

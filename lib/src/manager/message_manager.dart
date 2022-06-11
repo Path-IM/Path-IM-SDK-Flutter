@@ -243,59 +243,32 @@ class MessageManager {
       conversationID,
       messageModel.toJsonMap(),
     );
-    if (conversationType == ConversationType.single) {
-      PathIMCore.instance.sendSingleMsg(
-        clientMsgID: clientMsgID,
-        sendID: _sdkManager.userID,
-        receiveID: receiveID,
-        contentType: contentType,
-        content: utf8.encode(content),
-        atUserIDList: atUserIDList,
-        clientTime: Int64(clientTime),
-        offlinePush: offlinePush != null
-            ? OfflinePush(
-                title: offlinePush.title,
-                desc: offlinePush.desc,
-                ex: offlinePush.ex,
-                iOSPushSound: offlinePush.iOSPushSound,
-                iOSBadgeCount: offlinePush.iOSBadgeCount,
-              )
-            : null,
-        msgOptions: MsgOptions(
-          persistent: msgOptions.persistent,
-          history: msgOptions.history,
-          local: msgOptions.local,
-          updateUnreadCount: msgOptions.updateUnreadCount,
-          updateConversation: msgOptions.updateConversation,
-        ),
-      );
-    } else {
-      PathIMCore.instance.sendGroupMsg(
-        clientMsgID: clientMsgID,
-        sendID: _sdkManager.userID,
-        receiveID: receiveID,
-        contentType: contentType,
-        content: utf8.encode(content),
-        atUserIDList: atUserIDList,
-        clientTime: Int64(clientTime),
-        offlinePush: offlinePush != null
-            ? OfflinePush(
-                title: offlinePush.title,
-                desc: offlinePush.desc,
-                ex: offlinePush.ex,
-                iOSPushSound: offlinePush.iOSPushSound,
-                iOSBadgeCount: offlinePush.iOSBadgeCount,
-              )
-            : null,
-        msgOptions: MsgOptions(
-          persistent: msgOptions.persistent,
-          history: msgOptions.history,
-          local: msgOptions.local,
-          updateUnreadCount: msgOptions.updateUnreadCount,
-          updateConversation: msgOptions.updateConversation,
-        ),
-      );
-    }
+    PathIMCore.instance.sendMsg(
+      clientMsgID: clientMsgID,
+      conversationType: conversationType,
+      sendID: _sdkManager.userID,
+      receiveID: receiveID,
+      contentType: contentType,
+      content: utf8.encode(content),
+      atUserIDList: atUserIDList,
+      clientTime: Int64(clientTime),
+      offlinePush: offlinePush != null
+          ? OfflinePush(
+              title: offlinePush.title,
+              desc: offlinePush.desc,
+              ex: offlinePush.ex,
+              iOSPushSound: offlinePush.iOSPushSound,
+              iOSBadgeCount: offlinePush.iOSBadgeCount,
+            )
+          : null,
+      msgOptions: MsgOptions(
+        persistent: msgOptions.persistent,
+        history: msgOptions.history,
+        local: msgOptions.local,
+        updateUnreadCount: msgOptions.updateUnreadCount,
+        updateConversation: msgOptions.updateConversation,
+      ),
+    );
     return messageModel;
   }
 
