@@ -16,12 +16,9 @@ class MessageModel {
   int? seq;
   OfflinePushModel? offlinePush;
   MsgOptionsModel msgOptions;
-
   int? sendStatus;
-
   bool? markRead;
   int? readCount;
-
   bool? markRevoke;
   String? revokeContent;
 
@@ -104,11 +101,18 @@ class MessageModel {
       "receiveID": receiveID,
       "contentType": contentType,
       "content": content,
-      "atUserIDList": atUserIDList?.join(","),
+      "atUserIDList": atUserIDList?.join(",") ?? "",
       "clientTime": clientTime,
       "serverTime": serverTime,
       "seq": seq,
-      "offlinePush": offlinePush?.toJson(),
+      "offlinePush": offlinePush?.toJson() ??
+          OfflinePushModel(
+            title: "",
+            desc: "",
+            ex: "",
+            iOSPushSound: "",
+            iOSBadgeCount: false,
+          ).toJson(),
       "msgOptions": msgOptions.toJson(),
       "sendStatus": sendStatus,
       "markRead": markRead,
