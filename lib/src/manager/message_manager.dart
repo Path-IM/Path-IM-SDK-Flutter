@@ -208,6 +208,31 @@ class MessageManager {
     );
   }
 
+  /// 标记消息撤回
+  void markMessageRevoke({
+    required int conversationType,
+    required String receiveID,
+    required String clientMsgID,
+    required String revokeContent,
+  }) {
+    sendCustom(
+      conversationType: conversationType,
+      receiveID: receiveID,
+      contentType: ContentType.revoke,
+      content: RevokeContent(
+        clientMsgID: clientMsgID,
+        revokeContent: revokeContent,
+      ).toJson(),
+      msgOptions: MsgOptionsModel(
+        persistent: true,
+        history: true,
+        local: false,
+        updateUnreadCount: false,
+        updateConversation: false,
+      ),
+    );
+  }
+
   /// 发送自定义消息
   Future<MessageModel> sendCustom({
     required int conversationType,

@@ -21,7 +21,9 @@ class ConversationModel {
   static ConversationModel fromJsonMap(Map<String, dynamic> map) =>
       ConversationModel(
         conversationID: map["conversationID"],
-        message: MessageModel.fromJson(map["message"]),
+        message: map["message"] != null
+            ? MessageModel.fromJson(map["message"])
+            : null,
         messageTime: map["messageTime"],
         unreadCount: map["unreadCount"],
         draftText: map["draftText"] != null
