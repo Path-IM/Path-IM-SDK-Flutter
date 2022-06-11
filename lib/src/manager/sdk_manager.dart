@@ -69,6 +69,7 @@ class SDKManager {
 
   /// 接收消息
   void receiveMsg(MsgData msg) async {
+    if (msg.serverMsgID.isEmpty) return;
     MessageModel message = MessageModel.fromProtobuf(msg);
     String conversationID;
     if (message.conversationType == ConversationType.single) {
