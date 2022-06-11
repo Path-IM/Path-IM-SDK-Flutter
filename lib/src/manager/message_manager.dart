@@ -1,13 +1,9 @@
-import 'dart:convert';
-import 'package:fixnum/fixnum.dart';
 import 'package:path_im_core_flutter/path_im_core_flutter.dart';
 import 'package:path_im_sdk_flutter/src/constant/content_type.dart';
-import 'package:path_im_sdk_flutter/src/constant/send_status.dart';
 import 'package:path_im_sdk_flutter/src/database/sdk_database.dart';
 import 'package:path_im_sdk_flutter/src/manager/sdk_manager.dart';
 import 'package:path_im_sdk_flutter/src/model/message_model.dart';
 import 'package:path_im_sdk_flutter/src/model/sdk_content.dart';
-import 'package:path_im_sdk_flutter/src/tool/sdk_tool.dart';
 
 class MessageManager {
   final SDKManager _sdkManager;
@@ -50,7 +46,7 @@ class MessageManager {
     List<String>? atUserIDList,
     OfflinePushModel? offlinePush,
   }) {
-    return sendCustom(
+    return _sdkManager.sendMsg(
       conversationType: conversationType,
       receiveID: receiveID,
       contentType: ContentType.text,
@@ -75,7 +71,7 @@ class MessageManager {
     List<String>? atUserIDList,
     OfflinePushModel? offlinePush,
   }) {
-    return sendCustom(
+    return _sdkManager.sendMsg(
       conversationType: conversationType,
       receiveID: receiveID,
       contentType: ContentType.picture,
@@ -100,7 +96,7 @@ class MessageManager {
     List<String>? atUserIDList,
     OfflinePushModel? offlinePush,
   }) {
-    return sendCustom(
+    return _sdkManager.sendMsg(
       conversationType: conversationType,
       receiveID: receiveID,
       contentType: ContentType.voice,
@@ -125,7 +121,7 @@ class MessageManager {
     List<String>? atUserIDList,
     OfflinePushModel? offlinePush,
   }) {
-    return sendCustom(
+    return _sdkManager.sendMsg(
       conversationType: conversationType,
       receiveID: receiveID,
       contentType: ContentType.video,
@@ -150,7 +146,7 @@ class MessageManager {
     List<String>? atUserIDList,
     OfflinePushModel? offlinePush,
   }) {
-    return sendCustom(
+    return _sdkManager.sendMsg(
       conversationType: conversationType,
       receiveID: receiveID,
       contentType: ContentType.file,
@@ -172,7 +168,7 @@ class MessageManager {
     required String receiveID,
     required bool focus,
   }) {
-    sendCustom(
+    _sdkManager.sendMsg(
       conversationType: ConversationType.single,
       receiveID: receiveID,
       contentType: ContentType.typing,
@@ -193,7 +189,7 @@ class MessageManager {
     required String receiveID,
     required List<String> clientMsgIDList,
   }) {
-    sendCustom(
+    _sdkManager.sendMsg(
       conversationType: conversationType,
       receiveID: receiveID,
       contentType: ContentType.read,
@@ -215,7 +211,7 @@ class MessageManager {
     required String clientMsgID,
     required String revokeContent,
   }) {
-    sendCustom(
+    _sdkManager.sendMsg(
       conversationType: conversationType,
       receiveID: receiveID,
       contentType: ContentType.revoke,
@@ -243,58 +239,16 @@ class MessageManager {
     OfflinePushModel? offlinePush,
     required MsgOptionsModel msgOptions,
   }) async {
-    String clientMsgID = SDKTool.getClientMsgID();
-    int clientTime = DateTime.now().millisecondsSinceEpoch;
-    String conversationID;
-    if (conversationType == ConversationType.single) {
-      conversationID = receiveID;
-    } else {
-      conversationID = "group_$receiveID";
-    }
-    MessageModel messageModel = MessageModel(
-      clientMsgID: clientMsgID,
+    assert(contentType > ContentType.file);
+    return _sdkManager.sendMsg(
       conversationType: conversationType,
-      sendID: _sdkManager.userID,
       receiveID: receiveID,
       contentType: contentType,
       content: content,
       atUserIDList: atUserIDList,
-      clientTime: clientTime,
       offlinePush: offlinePush,
       msgOptions: msgOptions,
-      sendStatus: SendStatus.sending,
     );
-    await _messageTable.insert(
-      conversationID,
-      messageModel.toJsonMap(),
-    );
-    PathIMCore.instance.sendMsg(
-      clientMsgID: clientMsgID,
-      conversationType: conversationType,
-      sendID: _sdkManager.userID,
-      receiveID: receiveID,
-      contentType: contentType,
-      content: utf8.encode(content),
-      atUserIDList: atUserIDList,
-      clientTime: Int64(clientTime),
-      offlinePush: offlinePush != null
-          ? OfflinePush(
-              title: offlinePush.title,
-              desc: offlinePush.desc,
-              ex: offlinePush.ex,
-              iOSPushSound: offlinePush.iOSPushSound,
-              iOSBadgeCount: offlinePush.iOSBadgeCount,
-            )
-          : null,
-      msgOptions: MsgOptions(
-        persistent: msgOptions.persistent,
-        history: msgOptions.history,
-        local: msgOptions.local,
-        updateUnreadCount: msgOptions.updateUnreadCount,
-        updateConversation: msgOptions.updateConversation,
-      ),
-    );
-    return messageModel;
   }
 
   /// 删除消息

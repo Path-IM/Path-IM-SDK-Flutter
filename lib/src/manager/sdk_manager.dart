@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'package:fixnum/fixnum.dart';
 import 'package:path_im_core_flutter/path_im_core_flutter.dart';
 import 'package:path_im_sdk_flutter/src/callback/group_id_callback.dart';
 import 'package:path_im_sdk_flutter/src/constant/content_type.dart';
@@ -314,6 +316,70 @@ class SDKManager {
   void _calculateTotalUnread() async {
     int value = await conversationTable.queryTotalUnread();
     totalUnreadListener?.totalUnread(value);
+  }
+
+  /// 发送消息
+  Future<MessageModel> sendMsg({
+    required int conversationType,
+    required String receiveID,
+    required int contentType,
+    required String content,
+    List<String>? atUserIDList,
+    OfflinePushModel? offlinePush,
+    required MsgOptionsModel msgOptions,
+  }) async {
+    String clientMsgID = SDKTool.getClientMsgID();
+    int clientTime = DateTime.now().millisecondsSinceEpoch;
+    String conversationID;
+    if (conversationType == ConversationType.single) {
+      conversationID = receiveID;
+    } else {
+      conversationID = "group_$receiveID";
+    }
+    MessageModel messageModel = MessageModel(
+      clientMsgID: clientMsgID,
+      conversationType: conversationType,
+      sendID: userID,
+      receiveID: receiveID,
+      contentType: contentType,
+      content: content,
+      atUserIDList: atUserIDList,
+      clientTime: clientTime,
+      offlinePush: offlinePush,
+      msgOptions: msgOptions,
+      sendStatus: SendStatus.sending,
+    );
+    await messageTable.insert(
+      conversationID,
+      messageModel.toJsonMap(),
+    );
+    PathIMCore.instance.sendMsg(
+      clientMsgID: clientMsgID,
+      conversationType: conversationType,
+      sendID: userID,
+      receiveID: receiveID,
+      contentType: contentType,
+      content: utf8.encode(content),
+      atUserIDList: atUserIDList,
+      clientTime: Int64(clientTime),
+      offlinePush: offlinePush != null
+          ? OfflinePush(
+              title: offlinePush.title,
+              desc: offlinePush.desc,
+              ex: offlinePush.ex,
+              iOSPushSound: offlinePush.iOSPushSound,
+              iOSBadgeCount: offlinePush.iOSBadgeCount,
+            )
+          : null,
+      msgOptions: MsgOptions(
+        persistent: msgOptions.persistent,
+        history: msgOptions.history,
+        local: msgOptions.local,
+        updateUnreadCount: msgOptions.updateUnreadCount,
+        updateConversation: msgOptions.updateConversation,
+      ),
+    );
+    return messageModel;
   }
 
   /// 发送消息回执
