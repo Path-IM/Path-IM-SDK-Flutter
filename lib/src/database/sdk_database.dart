@@ -30,10 +30,14 @@ class SDKDatabase {
     _database = await openDatabase(
       join(await getDatabasesPath(), "$userID.db"),
       version: 1,
+      onConfigure: (db) {
+        configTable.configure(db);
+        conversationTable.configure(db);
+        messageTable.configure(db);
+      },
       onCreate: (db, version) async {
-        await configTable.onCreate(db);
-        await conversationTable.onCreate(db);
-        messageTable.onCreate(db);
+        await configTable.create();
+        await conversationTable.create();
       },
       onOpen: (db) async {
         int? maxSeq = await configTable.queryMaxSeq();

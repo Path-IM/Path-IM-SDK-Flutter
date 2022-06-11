@@ -3,7 +3,7 @@ import 'package:sqflite/sqflite.dart';
 class MessageTable {
   Database? _database;
 
-  void onCreate(Database database) {
+  void configure(Database database) {
     _database = database;
   }
 

@@ -5,8 +5,11 @@ class ConfigTable {
 
   Database? _database;
 
-  Future<void> onCreate(Database database) async {
+  void configure(Database database) {
     _database = database;
+  }
+
+  Future<void> create() async {
     return await _database?.execute(
       "CREATE TABLE $tableName"
       "(k TEXT PRIMARY KEY,"
