@@ -83,7 +83,7 @@ class ConversationManager {
     }
     List<MessageModel> list = await _messageManager.getMessageList(
       conversationID: conversationID,
-      where: "receiveID = ? AND markRead = ?",
+      where: "sendID != ? AND markRead = ?",
       whereArgs: [receiveID, 0],
     );
     if (list.isNotEmpty) {
