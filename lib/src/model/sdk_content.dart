@@ -30,7 +30,7 @@ class ReadContent {
 
   static ReadContent fromJson(String content) {
     Map<String, dynamic> map = json.decode(content);
-    return ReadContent(clientMsgIDList: map["clientMsgIDList"]);
+    return ReadContent(clientMsgIDList: map["clientMsgIDList"].cast<String>());
   }
 
   String toJson() {

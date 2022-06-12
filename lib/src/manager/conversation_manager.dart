@@ -122,8 +122,8 @@ class ConversationManager {
     }
     List<MessageModel> list = await _messageManager.getMessageList(
       conversationID: conversationID,
-      where: "receiveID = ? AND markRead != ?",
-      whereArgs: [receiveID, true],
+      where: "receiveID = ? AND markRead = ?",
+      whereArgs: [receiveID, 0],
     );
     List<String> clientMsgIDList = [];
     for (MessageModel messageModel in list) {
