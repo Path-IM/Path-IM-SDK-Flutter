@@ -325,12 +325,6 @@ class SDKManager {
   }) async {
     String clientMsgID = SDKTool.getClientMsgID();
     int clientTime = DateTime.now().millisecondsSinceEpoch;
-    String conversationID;
-    if (conversationType == ConversationType.single) {
-      conversationID = receiveID;
-    } else {
-      conversationID = "group_$receiveID";
-    }
     MessageModel messageModel = MessageModel(
       clientMsgID: clientMsgID,
       conversationType: conversationType,
@@ -344,10 +338,18 @@ class SDKManager {
       msgOptions: msgOptions,
       sendStatus: SendStatus.sending,
     );
-    await messageTable.insert(
-      conversationID,
-      messageModel.toJsonMap(),
-    );
+    if (msgOptions.local) {
+      String conversationID;
+      if (conversationType == ConversationType.single) {
+        conversationID = receiveID;
+      } else {
+        conversationID = "group_$receiveID";
+      }
+      await messageTable.insert(
+        conversationID,
+        messageModel.toJsonMap(),
+      );
+    }
     PathIMCore.instance.sendMsg(
       clientMsgID: clientMsgID,
       conversationType: conversationType,
