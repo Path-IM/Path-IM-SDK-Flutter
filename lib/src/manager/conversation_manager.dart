@@ -77,10 +77,26 @@ class ConversationManager {
     required int conversationType,
     required String conversationID,
   }) async {
-    await _markAllMessageRead(
-      conversationType: conversationType,
+    String receiveID = conversationID;
+    if (conversationType == ConversationType.group) {
+      receiveID = receiveID.replaceFirst("group_", "");
+    }
+    List<MessageModel> list = await _messageManager.getMessageList(
       conversationID: conversationID,
+      where: "receiveID = ? AND markRead = ?",
+      whereArgs: [receiveID, 0],
     );
+    if (list.isNotEmpty) {
+      List<String> clientMsgIDList = [];
+      for (MessageModel messageModel in list) {
+        clientMsgIDList.add(messageModel.clientMsgID);
+      }
+      _messageManager.markMessageRead(
+        conversationType: conversationType,
+        receiveID: receiveID,
+        clientMsgIDList: clientMsgIDList,
+      );
+    }
     int? count = await _conversationTable.update(
       {"unreadCount": 0},
       where: "conversationID = ?",
@@ -91,17 +107,11 @@ class ConversationManager {
 
   /// 删除会话
   Future<bool> deleteConversation({
-    required int conversationType,
     required String conversationID,
     bool clearMessage = true,
   }) async {
     if (clearMessage) {
       await _messageManager.clearMessage(
-        conversationID: conversationID,
-      );
-    } else {
-      await _markAllMessageRead(
-        conversationType: conversationType,
         conversationID: conversationID,
       );
     }
@@ -110,30 +120,6 @@ class ConversationManager {
       whereArgs: [conversationID],
     );
     return count != null;
-  }
-
-  Future _markAllMessageRead({
-    required int conversationType,
-    required String conversationID,
-  }) async {
-    String receiveID = conversationID;
-    if (conversationType == ConversationType.group) {
-      receiveID = receiveID.replaceFirst("group_", "");
-    }
-    List<MessageModel> list = await _messageManager.getMessageList(
-      conversationID: conversationID,
-      where: "receiveID = ? AND markRead = ?",
-      whereArgs: [receiveID, 0],
-    );
-    List<String> clientMsgIDList = [];
-    for (MessageModel messageModel in list) {
-      clientMsgIDList.add(messageModel.clientMsgID);
-    }
-    _messageManager.markMessageRead(
-      conversationType: conversationType,
-      receiveID: receiveID,
-      clientMsgIDList: clientMsgIDList,
-    );
   }
 
   /// 获取总未读消息数
