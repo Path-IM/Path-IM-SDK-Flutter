@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:path_im_sdk_flutter/src/model/message_model.dart';
 
 class ConversationModel {
+  int conversationType;
   String conversationID;
   MessageModel? message;
   int? messageTime;
@@ -10,6 +11,7 @@ class ConversationModel {
   bool? isPinned;
 
   ConversationModel({
+    required this.conversationType,
     required this.conversationID,
     this.message,
     this.messageTime,
@@ -20,25 +22,27 @@ class ConversationModel {
 
   static ConversationModel fromJsonMap(Map<String, dynamic> map) =>
       ConversationModel(
+        conversationType: map["conversationType"],
         conversationID: map["conversationID"],
-        message: map["message"] != null
+        message: map["message"].isNotEmpty
             ? MessageModel.fromJson(map["message"])
             : null,
         messageTime: map["messageTime"],
         unreadCount: map["unreadCount"],
-        draftText: map["draftText"] != null
+        draftText: map["draftText"].isNotEmpty
             ? DraftText.fromJson(map["draftText"])
             : null,
-        isPinned: map["isPinned"],
+        isPinned: map["isPinned"] == 1,
       );
 
   Map<String, dynamic> toJsonMap() => {
+        "conversationType": conversationType,
         "conversationID": conversationID,
-        "message": message?.toJson(),
-        "messageTime": messageTime,
-        "unreadCount": unreadCount,
-        "draftText": draftText?.toJson(),
-        "isPinned": isPinned,
+        "message": message?.toJson() ?? "",
+        "messageTime": messageTime ?? 0,
+        "unreadCount": unreadCount ?? 0,
+        "draftText": draftText?.toJson() ?? "",
+        "isPinned": isPinned == true ? 1 : 0,
       };
 }
 

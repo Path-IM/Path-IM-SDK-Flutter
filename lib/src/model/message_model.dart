@@ -85,9 +85,9 @@ class MessageModel {
       offlinePush: OfflinePushModel.fromJson(map["offlinePush"]),
       msgOptions: MsgOptionsModel.fromJson(map["msgOptions"]),
       sendStatus: map["sendStatus"],
-      markRead: map["markRead"],
+      markRead: map["markRead"] == 1,
       readCount: map["readCount"],
-      markRevoke: map["markRevoke"],
+      markRevoke: map["markRevoke"] == 1,
       revokeContent: map["revokeContent"],
     );
   }
@@ -115,10 +115,10 @@ class MessageModel {
           ).toJson(),
       "msgOptions": msgOptions.toJson(),
       "sendStatus": sendStatus,
-      "markRead": markRead,
-      "readCount": readCount,
-      "markRevoke": markRevoke,
-      "revokeContent": revokeContent,
+      "markRead": markRead ?? 0,
+      "readCount": readCount ?? 0,
+      "markRevoke": markRevoke ?? 0,
+      "revokeContent": revokeContent ?? "",
     };
   }
 }

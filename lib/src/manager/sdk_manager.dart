@@ -180,6 +180,7 @@ class SDKManager {
       conversationListener?.update(conversation);
     } else {
       ConversationModel conversation = ConversationModel(
+        conversationType: message.conversationType,
         conversationID: conversationID,
       );
       if (msgOptions.updateConversation) {
@@ -230,10 +231,7 @@ class SDKManager {
       }
       int? value = await messageTable.update(
         conversationID,
-        {
-          "markRead": true,
-          "readCount": readCount,
-        },
+        {"markRead": 1, "readCount": readCount},
         where: "clientMsgID = ?",
         whereArgs: [clientMsgID],
       );
@@ -280,10 +278,7 @@ class SDKManager {
     if (list == null || list.isEmpty) return;
     int? value = await messageTable.update(
       conversationID,
-      {
-        "markRevoke": true,
-        "revokeContent": content.revokeContent,
-      },
+      {"markRevoke": 1, "revokeContent": content.revokeContent},
       where: "clientMsgID = ?",
       whereArgs: [clientMsgID],
     );

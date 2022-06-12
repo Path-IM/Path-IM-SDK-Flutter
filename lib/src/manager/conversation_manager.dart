@@ -16,7 +16,7 @@ class ConversationManager {
   /// 获取所有会话列表
   Future<List<ConversationModel>> getAllConversationList() async {
     return getConversationList(
-      orderBy: "isPinned DESC, messageTime DESC",
+      orderBy: "isPinned DESC, draftText DESC, messageTime DESC",
     );
   }
 
@@ -52,7 +52,7 @@ class ConversationManager {
       );
     }
     int? count = await _conversationTable.update(
-      {"draftText": draftText?.toJson()},
+      {"draftText": draftText?.toJson() ?? ""},
       where: "conversationID = ?",
       whereArgs: [conversationID],
     );
@@ -65,7 +65,7 @@ class ConversationManager {
     required bool isPinned,
   }) async {
     int? count = await _conversationTable.update(
-      {"isPinned": isPinned},
+      {"isPinned": isPinned ? 1 : 0},
       where: "conversationID = ?",
       whereArgs: [conversationID],
     );
@@ -122,8 +122,8 @@ class ConversationManager {
     }
     List<MessageModel> list = await _messageManager.getMessageList(
       conversationID: conversationID,
-      where: "receiveID = ? AND markRead = ?",
-      whereArgs: [receiveID, false],
+      where: "receiveID = ? AND markRead != ?",
+      whereArgs: [receiveID, true],
     );
     List<String> clientMsgIDList = [];
     for (MessageModel messageModel in list) {
