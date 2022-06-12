@@ -13,6 +13,7 @@ class ConversationTable {
     return await _database?.execute(
       "CREATE TABLE $tableName"
       "(conversationID TEXT PRIMARY KEY,"
+      "conversationType INTEGER,"
       "message TEXT,"
       "messageTime INTEGER,"
       "unreadCount INTEGER,"

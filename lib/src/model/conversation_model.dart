@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'package:path_im_sdk_flutter/src/model/message_model.dart';
 
 class ConversationModel {
-  int conversationType;
   String conversationID;
+  int conversationType;
   MessageModel? message;
   int? messageTime;
   int? unreadCount;
@@ -11,8 +11,8 @@ class ConversationModel {
   bool? isPinned;
 
   ConversationModel({
-    required this.conversationType,
     required this.conversationID,
+    required this.conversationType,
     this.message,
     this.messageTime,
     this.unreadCount,
@@ -22,8 +22,8 @@ class ConversationModel {
 
   static ConversationModel fromJsonMap(Map<String, dynamic> map) =>
       ConversationModel(
-        conversationType: map["conversationType"],
         conversationID: map["conversationID"],
+        conversationType: map["conversationType"],
         message: map["message"].isNotEmpty
             ? MessageModel.fromJson(map["message"])
             : null,
@@ -36,8 +36,8 @@ class ConversationModel {
       );
 
   Map<String, dynamic> toJsonMap() => {
-        "conversationType": conversationType,
         "conversationID": conversationID,
+        "conversationType": conversationType,
         "message": message?.toJson() ?? "",
         "messageTime": messageTime ?? 0,
         "unreadCount": unreadCount ?? 0,

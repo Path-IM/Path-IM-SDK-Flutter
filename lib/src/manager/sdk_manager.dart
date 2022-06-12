@@ -180,8 +180,8 @@ class SDKManager {
       conversationListener?.update(conversation);
     } else {
       ConversationModel conversation = ConversationModel(
-        conversationType: message.conversationType,
         conversationID: conversationID,
+        conversationType: message.conversationType,
       );
       if (msgOptions.updateConversation) {
         conversation.message = message;
