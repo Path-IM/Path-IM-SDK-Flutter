@@ -161,6 +161,9 @@ class SDKManager {
       whereArgs: [conversationID],
     );
     if (list != null && list.isNotEmpty) {
+      if (!msgOptions.updateConversation && !msgOptions.updateUnreadCount) {
+        return;
+      }
       ConversationModel conversation = ConversationModel.fromJsonMap(
         list.first,
       );
