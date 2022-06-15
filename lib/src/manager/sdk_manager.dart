@@ -84,9 +84,9 @@ class SDKManager {
         configTable.updateMaxSeq(message.seq!);
       }
       if (message.sendID == userID) {
-        conversationID = message.receiveID;
+        conversationID = "single_${message.receiveID}";
       } else {
-        conversationID = message.sendID;
+        conversationID = "single_${message.sendID}";
       }
     } else {
       if (message.seq != null && message.seq != 0) {
@@ -169,7 +169,7 @@ class SDKManager {
       );
       if (msgOptions.updateConversation) {
         conversation.message = message;
-        conversation.messageTime = message.serverTime ?? message.clientTime;
+        conversation.messageTime = message.clientTime;
       }
       if (msgOptions.updateUnreadCount && message.sendID != userID) {
         int unreadCount = conversation.unreadCount!;
@@ -188,7 +188,7 @@ class SDKManager {
       );
       if (msgOptions.updateConversation) {
         conversation.message = message;
-        conversation.messageTime = message.serverTime ?? message.clientTime;
+        conversation.messageTime = message.clientTime;
       }
       if (msgOptions.updateUnreadCount && message.sendID != userID) {
         conversation.unreadCount = 1;
@@ -344,7 +344,7 @@ class SDKManager {
     if (msgOptions.local) {
       String conversationID;
       if (conversationType == ConversationType.single) {
-        conversationID = receiveID;
+        conversationID = "single_$receiveID";
       } else {
         conversationID = "group_$receiveID";
       }
@@ -390,7 +390,7 @@ class SDKManager {
   }) async {
     String conversationID;
     if (sendMsgResp.conversationType == ConversationType.single) {
-      conversationID = sendMsgResp.receiveID;
+      conversationID = "single_${sendMsgResp.receiveID}";
     } else {
       conversationID = "group_${sendMsgResp.receiveID}";
     }
