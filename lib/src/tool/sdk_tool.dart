@@ -22,7 +22,7 @@ class SDKTool {
   static List<int> generateSeqList(int seq, int? maxSeq) {
     if (maxSeq != null && maxSeq != 0) {
       int diff = seq - maxSeq;
-      if (diff > 0) {
+      if (diff > 1) {
         return List.generate(diff, (index) {
           return maxSeq + index + 1;
         });
