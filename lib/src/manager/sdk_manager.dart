@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:fixnum/fixnum.dart';
 import 'package:path_im_core_flutter/path_im_core_flutter.dart';
@@ -72,105 +73,7 @@ class SDKManager {
   /// 拉取消息
   void pullMsg(List<MsgData> msgList) async {
     for (MsgData msg in msgList) {
-      MessageModel message = MessageModel.fromProtobuf(msg);
-      String conversationID;
-      if (message.conversationType == ConversationType.single) {
-        if (message.seq != null && message.seq != 0) {
-          // 拉取缺失消息
-          int? maxSeq = await configTable.queryMaxSeq();
-          PathIMCore.instance.pullSingleMsg(
-            seqList: SDKTool.generateSeqList(message.seq!, maxSeq),
-          );
-          configTable.updateMaxSeq(message.seq!);
-        }
-        if (message.sendID == userID) {
-          conversationID = "single_${message.receiveID}";
-        } else {
-          conversationID = "single_${message.sendID}";
-        }
-      } else {
-        if (message.seq != null && message.seq != 0) {
-          // 拉取缺失消息
-          int? maxSeq = await configTable.queryGroupMaxSeq(message.receiveID);
-          PathIMCore.instance.pullGroupMsg(
-            groupID: message.receiveID,
-            seqList: SDKTool.generateSeqList(message.seq!, maxSeq),
-          );
-          configTable.updateGroupMaxSeq(message.receiveID, message.seq!);
-        }
-        conversationID = "group_${message.receiveID}";
-      }
-      message.sendStatus = SendStatus.success;
-
-      List<Map<String, dynamic>>? messageList = await messageTable.query(
-        conversationID,
-        where: "clientMsgID = ?",
-        whereArgs: [message.clientMsgID],
-      );
-      List<Map<String, dynamic>>? conversationList =
-          await conversationTable.query(
-        where: "conversationID = ?",
-        whereArgs: [conversationID],
-      );
-      if (sdkDatabase.database != null) {
-        await sdkDatabase.database!.transaction((txn) async {
-          // 消息
-          if (messageList != null && messageList.isNotEmpty) {
-            Map<String, dynamic> values = {
-              "serverMsgID": message.serverMsgID,
-              "serverTime": message.serverTime,
-              "seq": message.seq,
-            };
-            await txn.update(
-              conversationID,
-              values,
-              where: "clientMsgID = ?",
-              whereArgs: [message.clientMsgID],
-            );
-          } else {
-            await txn.insert(
-              conversationID,
-              message.toJsonMap(),
-            );
-          }
-          // 会话
-          if (conversationList != null && conversationList.isNotEmpty) {
-            ConversationModel conversation = ConversationModel.fromJsonMap(
-              conversationList.first,
-            );
-            conversation.message = message;
-            conversation.messageTime = message.clientTime;
-            int unreadCount = conversation.unreadCount!;
-            conversation.unreadCount = ++unreadCount;
-            await txn.update(
-              conversationTable.tableName,
-              conversation.toJsonMap(),
-              where: "conversationID = ?",
-              whereArgs: [conversationID],
-            );
-            conversationListener?.update(conversation);
-          } else {
-            ConversationModel conversation = ConversationModel(
-              conversationID: conversationID,
-              conversationType: message.conversationType,
-            );
-            conversation.message = message;
-            conversation.messageTime = message.clientTime;
-            if (message.sendID != userID) {
-              conversation.unreadCount = 1;
-            } else {
-              conversation.unreadCount = 0;
-            }
-            await txn.insert(
-              conversationTable.tableName,
-              conversation.toJsonMap(),
-            );
-            conversationListener?.added(conversation);
-          }
-          _calculateTotalUnread();
-        });
-      }
-      messageListener?.receiveMsg(message);
+      pushMsg(msg);
     }
   }
 
@@ -178,64 +81,81 @@ class SDKManager {
   void pushMsg(MsgData msg) async {
     if (msg.serverMsgID.isEmpty) return;
     MessageModel message = MessageModel.fromProtobuf(msg);
-    String conversationID;
-    if (message.conversationType == ConversationType.single) {
-      if (message.seq != null && message.seq != 0) {
-        // 拉取缺失消息
-        int? maxSeq = await configTable.queryMaxSeq();
-        PathIMCore.instance.pullSingleMsg(
-          seqList: SDKTool.generateSeqList(message.seq!, maxSeq),
-        );
-        configTable.updateMaxSeq(message.seq!);
-      }
-      if (message.sendID == userID) {
-        conversationID = "single_${message.receiveID}";
-      } else {
-        conversationID = "single_${message.sendID}";
-      }
-    } else {
-      if (message.seq != null && message.seq != 0) {
-        // 拉取缺失消息
-        int? maxSeq = await configTable.queryGroupMaxSeq(message.receiveID);
-        PathIMCore.instance.pullGroupMsg(
-          groupID: message.receiveID,
-          seqList: SDKTool.generateSeqList(message.seq!, maxSeq),
-        );
-        configTable.updateGroupMaxSeq(message.receiveID, message.seq!);
-      }
-      conversationID = "group_${message.receiveID}";
-    }
     message.sendStatus = SendStatus.success;
+    await sdkDatabase.database!.transaction((txn) async {
+      String conversationID;
+      if (message.conversationType == ConversationType.single) {
+        if (message.sendID == userID) {
+          conversationID = "single_${message.receiveID}";
+        } else {
+          conversationID = "single_${message.sendID}";
+        }
+      } else {
+        conversationID = "group_${message.receiveID}";
+      }
+      int? seq = message.seq;
+      if (seq != null && seq != 0) {
+        _pullDefectMessage(
+          message.conversationType,
+          message.receiveID,
+          seq,
+          txn,
+        );
+      }
+      await _updateMessage(conversationID, message, txn);
+      await _updateConversation(conversationID, message, txn);
+      if (message.conversationType == ConversationType.single &&
+          message.contentType == ContentType.typing) {
+        _updateTyping(message);
+        return;
+      }
+      if (message.contentType == ContentType.read) {
+        await _updateRead(conversationID, message, txn);
+        return;
+      }
+      if (message.contentType == ContentType.revoke) {
+        await _updateRevoke(conversationID, message, txn);
+        return;
+      }
+      messageListener?.receiveMsg(message);
+    });
+  }
 
-    await _updateMessage(conversationID, message);
-    await _updateConversation(conversationID, message);
-    if (message.conversationType == ConversationType.single &&
-        message.contentType == ContentType.typing) {
-      _updateTyping(message);
-      return;
+  /// 拉取缺失消息
+  Future _pullDefectMessage(
+    int conversationType,
+    String receiveID,
+    int seq,
+    Transaction txn,
+  ) async {
+    if (conversationType == ConversationType.single) {
+      int? maxSeq = await configTable.queryMaxSeq(txn: txn);
+      PathIMCore.instance.pullSingleMsg(
+        seqList: SDKTool.generateSeqList(seq, maxSeq),
+      );
+      configTable.updateMaxSeq(seq, txn: txn);
+    } else {
+      int? maxSeq = await configTable.queryGroupMaxSeq(receiveID, txn: txn);
+      PathIMCore.instance.pullGroupMsg(
+        groupID: receiveID,
+        seqList: SDKTool.generateSeqList(seq, maxSeq),
+      );
+      configTable.updateGroupMaxSeq(receiveID, seq, txn: txn);
     }
-    if (message.contentType == ContentType.read) {
-      _updateRead(conversationID, message);
-      return;
-    }
-    if (message.contentType == ContentType.revoke) {
-      _updateRevoke(conversationID, message);
-      return;
-    }
-
-    messageListener?.receiveMsg(message);
   }
 
   /// 更新消息
   Future _updateMessage(
     String conversationID,
     MessageModel message,
+    Transaction txn,
   ) async {
     if (!message.msgOptions.local) return;
     List<Map<String, dynamic>>? list = await messageTable.query(
       conversationID,
       where: "clientMsgID = ?",
       whereArgs: [message.clientMsgID],
+      txn: txn,
     );
     if (list != null && list.isNotEmpty) {
       Map<String, dynamic> values = {
@@ -248,11 +168,13 @@ class SDKManager {
         values,
         where: "clientMsgID = ?",
         whereArgs: [message.clientMsgID],
+        txn: txn,
       );
     } else {
       await messageTable.insert(
         conversationID,
         message.toJsonMap(),
+        txn: txn,
       );
     }
   }
@@ -261,11 +183,13 @@ class SDKManager {
   Future _updateConversation(
     String conversationID,
     MessageModel message,
+    Transaction txn,
   ) async {
     MsgOptionsModel msgOptions = message.msgOptions;
     List<Map<String, dynamic>>? list = await conversationTable.query(
       where: "conversationID = ?",
       whereArgs: [conversationID],
+      txn: txn,
     );
     if (list != null && list.isNotEmpty) {
       if (!msgOptions.updateConversation && !msgOptions.updateUnreadCount) {
@@ -286,6 +210,7 @@ class SDKManager {
         conversation.toJsonMap(),
         where: "conversationID = ?",
         whereArgs: [conversationID],
+        txn: txn,
       );
       conversationListener?.update(conversation);
     } else {
@@ -304,10 +229,11 @@ class SDKManager {
       }
       await conversationTable.insert(
         conversation.toJsonMap(),
+        txn: txn,
       );
       conversationListener?.added(conversation);
     }
-    _calculateTotalUnread();
+    await _calculateTotalUnread(txn);
   }
 
   /// 正在输入
@@ -318,7 +244,11 @@ class SDKManager {
   }
 
   /// 读取消息
-  void _updateRead(String conversationID, MessageModel message) async {
+  Future _updateRead(
+    String conversationID,
+    MessageModel message,
+    Transaction txn,
+  ) async {
     ReadContent content = ReadContent.fromJson(message.content);
     if (content.clientMsgIDList.isEmpty) return;
     for (String clientMsgID in content.clientMsgIDList) {
@@ -326,30 +256,30 @@ class SDKManager {
         conversationID,
         where: "clientMsgID = ?",
         whereArgs: [clientMsgID],
+        txn: txn,
       );
       if (list == null || list.isEmpty) continue;
       MessageModel messageModel = MessageModel.fromJsonMap(list.first);
       if (messageModel.markRead == true) continue;
       int readCount = 0;
-      if (message.conversationType == ConversationType.single) {
-        ++readCount;
-      } else {
+      if (message.conversationType == ConversationType.group) {
         if (messageModel.readCount != null) {
           readCount = messageModel.readCount!;
         }
-        ++readCount;
       }
       int? value = await messageTable.update(
         conversationID,
-        {"markRead": 1, "readCount": readCount},
+        {"markRead": 1, "readCount": ++readCount},
         where: "clientMsgID = ?",
         whereArgs: [clientMsgID],
+        txn: txn,
       );
       if (value != null) {
         if (message.sendID == userID) {
           List<Map<String, dynamic>>? list = await conversationTable.query(
             where: "conversationID = ?",
             whereArgs: [conversationID],
+            txn: txn,
           );
           if (list == null || list.isEmpty) return;
           ConversationModel conversation = ConversationModel.fromJsonMap(
@@ -361,9 +291,10 @@ class SDKManager {
               {"unreadCount": --unreadCount},
               where: "conversationID = ?",
               whereArgs: [conversationID],
+              txn: txn,
             );
             conversationListener?.update(conversation);
-            _calculateTotalUnread();
+            await _calculateTotalUnread(txn);
           }
         } else {
           if (message.conversationType == ConversationType.single) {
@@ -377,13 +308,18 @@ class SDKManager {
   }
 
   /// 撤回消息
-  void _updateRevoke(String conversationID, MessageModel message) async {
+  Future _updateRevoke(
+    String conversationID,
+    MessageModel message,
+    Transaction txn,
+  ) async {
     RevokeContent content = RevokeContent.fromJson(message.content);
     String clientMsgID = content.clientMsgID;
     List<Map<String, dynamic>>? list = await messageTable.query(
       conversationID,
       where: "clientMsgID = ?",
       whereArgs: [clientMsgID],
+      txn: txn,
     );
     if (list == null || list.isEmpty) return;
     int? value = await messageTable.update(
@@ -391,12 +327,14 @@ class SDKManager {
       {"markRevoke": 1, "revokeContent": content.revokeContent},
       where: "clientMsgID = ?",
       whereArgs: [clientMsgID],
+      txn: txn,
     );
     if (value != null) {
       revokeReceiptListener?.revoke(clientMsgID);
       List<Map<String, dynamic>>? list = await conversationTable.query(
         where: "conversationID = ?",
         whereArgs: [conversationID],
+        txn: txn,
       );
       if (list == null || list.isEmpty) return;
       ConversationModel conversation = ConversationModel.fromJsonMap(
@@ -411,6 +349,7 @@ class SDKManager {
           conversation.toJsonMap(),
           where: "conversationID = ?",
           whereArgs: [conversationID],
+          txn: txn,
         );
         conversationListener?.update(conversation);
       }
@@ -418,8 +357,8 @@ class SDKManager {
   }
 
   /// 计算总未读数
-  void _calculateTotalUnread() async {
-    int value = await conversationTable.queryTotalUnread();
+  Future _calculateTotalUnread(Transaction txn) async {
+    int value = await conversationTable.queryTotalUnread(txn: txn);
     totalUnreadListener?.totalUnread(value);
   }
 

@@ -23,9 +23,10 @@ class ConversationTable {
   }
 
   Future<int?> insert(
-    Map<String, Object?> values,
-  ) async {
-    return await _database?.insert(
+    Map<String, Object?> values, {
+    Transaction? txn,
+  }) async {
+    return await (txn ?? _database)?.insert(
       tableName,
       values,
       conflictAlgorithm: ConflictAlgorithm.replace,
@@ -35,8 +36,9 @@ class ConversationTable {
   Future<int?> delete({
     String? where,
     List<Object?>? whereArgs,
+    Transaction? txn,
   }) async {
-    return await _database?.delete(
+    return await (txn ?? _database)?.delete(
       tableName,
       where: where,
       whereArgs: whereArgs,
@@ -47,8 +49,9 @@ class ConversationTable {
     Map<String, dynamic> values, {
     String? where,
     List<Object?>? whereArgs,
+    Transaction? txn,
   }) async {
-    return await _database?.update(
+    return await (txn ?? _database)?.update(
       tableName,
       values,
       where: where,
@@ -63,8 +66,9 @@ class ConversationTable {
     String? orderBy,
     int? limit,
     int? offset,
+    Transaction? txn,
   }) async {
-    return await _database?.query(
+    return await (txn ?? _database)?.query(
       tableName,
       where: where,
       whereArgs: whereArgs,
@@ -74,8 +78,10 @@ class ConversationTable {
     );
   }
 
-  Future<int> queryTotalUnread() async {
-    List<Map<String, Object?>>? list = await _database?.rawQuery(
+  Future<int> queryTotalUnread({
+    Transaction? txn,
+  }) async {
+    List<Map<String, Object?>>? list = await (txn ?? _database)?.rawQuery(
       "SELECT sum(unreadCount) FROM $tableName",
     );
     if (list != null) {

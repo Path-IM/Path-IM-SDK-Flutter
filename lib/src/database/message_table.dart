@@ -7,9 +7,12 @@ class MessageTable {
     _database = database;
   }
 
-  Future<void> _create(String tableName) async {
+  Future<void> _create(
+    String tableName, {
+    Transaction? txn,
+  }) async {
     try {
-      return await _database?.execute(
+      return await (txn ?? _database)?.execute(
         "CREATE TABLE $tableName"
         "(clientMsgID TEXT PRIMARY KEY,"
         "serverMsgID TEXT,"
@@ -35,10 +38,11 @@ class MessageTable {
 
   Future<int?> insert(
     String tableName,
-    Map<String, dynamic> values,
-  ) async {
-    await _create(tableName);
-    return _database?.insert(
+    Map<String, dynamic> values, {
+    Transaction? txn,
+  }) async {
+    await _create(tableName, txn: txn);
+    return (txn ?? _database)?.insert(
       tableName,
       values,
       conflictAlgorithm: ConflictAlgorithm.replace,
@@ -49,9 +53,10 @@ class MessageTable {
     String tableName, {
     String? where,
     List<Object?>? whereArgs,
+    Transaction? txn,
   }) async {
-    await _create(tableName);
-    return _database?.delete(
+    await _create(tableName, txn: txn);
+    return (txn ?? _database)?.delete(
       tableName,
       where: where,
       whereArgs: whereArgs,
@@ -63,9 +68,10 @@ class MessageTable {
     Map<String, dynamic> values, {
     String? where,
     List<Object?>? whereArgs,
+    Transaction? txn,
   }) async {
-    await _create(tableName);
-    return _database?.update(
+    await _create(tableName, txn: txn);
+    return (txn ?? _database)?.update(
       tableName,
       values,
       where: where,
@@ -81,9 +87,10 @@ class MessageTable {
     String? orderBy,
     int? limit,
     int? offset,
+    Transaction? txn,
   }) async {
-    await _create(tableName);
-    return _database?.query(
+    await _create(tableName, txn: txn);
+    return (txn ?? _database)?.query(
       tableName,
       where: where,
       whereArgs: whereArgs,

@@ -25,8 +25,11 @@ class ConfigTable {
     );
   }
 
-  Future<int?> updateMaxSeq(int maxSeq) async {
-    return await _database?.update(
+  Future<int?> updateMaxSeq(
+    int maxSeq, {
+    Transaction? txn,
+  }) async {
+    return await (txn ?? _database)?.update(
       tableName,
       {"v": maxSeq},
       where: "k = ?",
@@ -35,8 +38,10 @@ class ConfigTable {
     );
   }
 
-  Future<int?> queryMaxSeq() async {
-    List<Map<String, dynamic>>? list = await _database?.query(
+  Future<int?> queryMaxSeq({
+    Transaction? txn,
+  }) async {
+    List<Map<String, dynamic>>? list = await (txn ?? _database)?.query(
       tableName,
       where: "k = ?",
       whereArgs: ["maxSeq"],
@@ -55,8 +60,12 @@ class ConfigTable {
     );
   }
 
-  Future<int?> updateGroupMaxSeq(String groupID, int groupMaxSeq) async {
-    return await _database?.update(
+  Future<int?> updateGroupMaxSeq(
+    String groupID,
+    int groupMaxSeq, {
+    Transaction? txn,
+  }) async {
+    return await (txn ?? _database)?.update(
       tableName,
       {"v": groupMaxSeq},
       where: "k = ?",
@@ -65,8 +74,11 @@ class ConfigTable {
     );
   }
 
-  Future<int?> queryGroupMaxSeq(String groupID) async {
-    List<Map<String, dynamic>>? list = await _database?.query(
+  Future<int?> queryGroupMaxSeq(
+    String groupID, {
+    Transaction? txn,
+  }) async {
+    List<Map<String, dynamic>>? list = await (txn ?? _database)?.query(
       tableName,
       where: "k = ?",
       whereArgs: ["groupMaxSeq_$groupID"],
