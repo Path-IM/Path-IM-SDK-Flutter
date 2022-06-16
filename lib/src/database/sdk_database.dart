@@ -24,10 +24,10 @@ class SDKDatabase {
     this.groupIDCallback,
   });
 
-  Database? _database;
+  Database? database;
 
   Future open({required String userID}) async {
-    _database = await openDatabase(
+    database = await openDatabase(
       join(await getDatabasesPath(), "$userID.db"),
       version: 1,
       onConfigure: (db) {
@@ -57,6 +57,6 @@ class SDKDatabase {
   }
 
   Future close() async {
-    await _database?.close();
+    await database?.close();
   }
 }

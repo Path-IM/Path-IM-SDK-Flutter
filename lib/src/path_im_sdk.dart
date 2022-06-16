@@ -81,7 +81,8 @@ class PathIMSDK {
       ),
       connectListener: connectListener,
       receiveMsgListener: ReceiveMsgListener(
-        onReceive: _sdkManager!.receiveMsg,
+        onPullMsg: _sdkManager!.pullMsg,
+        onPushMsg: _sdkManager!.pushMsg,
       ),
       sendMsgListener: SendMsgListener(
         onSuccess: (sendMsgResp) {
