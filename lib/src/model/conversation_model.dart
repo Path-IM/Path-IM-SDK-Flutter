@@ -4,6 +4,7 @@ import 'package:path_im_sdk_flutter/src/model/message_model.dart';
 class ConversationModel {
   String conversationID;
   int conversationType;
+  String receiveID;
   MessageModel? message;
   int? messageTime;
   int? unreadCount;
@@ -13,6 +14,7 @@ class ConversationModel {
   ConversationModel({
     required this.conversationID,
     required this.conversationType,
+    required this.receiveID,
     this.message,
     this.messageTime,
     this.unreadCount,
@@ -24,6 +26,7 @@ class ConversationModel {
       ConversationModel(
         conversationID: map["conversationID"],
         conversationType: map["conversationType"],
+        receiveID: map["receiveID"],
         message: map["message"].isNotEmpty
             ? MessageModel.fromJson(map["message"])
             : null,
@@ -38,6 +41,7 @@ class ConversationModel {
   Map<String, dynamic> toJsonMap() => {
         "conversationID": conversationID,
         "conversationType": conversationType,
+        "receiveID": receiveID,
         "message": message?.toJson() ?? "",
         "messageTime": messageTime ?? 0,
         "unreadCount": unreadCount ?? 0,

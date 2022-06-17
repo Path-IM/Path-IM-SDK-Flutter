@@ -163,6 +163,28 @@ class MessageManager {
     );
   }
 
+  /// 发送自定义消息
+  Future<MessageModel> sendCustom({
+    required int conversationType,
+    required String receiveID,
+    required int contentType,
+    required String content,
+    List<String>? atUserIDList,
+    OfflinePushModel? offlinePush,
+    required MsgOptionsModel msgOptions,
+  }) async {
+    assert(contentType > ContentType.file);
+    return _sdkManager.sendMsg(
+      conversationType: conversationType,
+      receiveID: receiveID,
+      contentType: contentType,
+      content: content,
+      atUserIDList: atUserIDList,
+      offlinePush: offlinePush,
+      msgOptions: msgOptions,
+    );
+  }
+
   /// 发送输入状态
   void sendTypingStatus({
     required String receiveID,
@@ -229,30 +251,8 @@ class MessageManager {
     );
   }
 
-  /// 发送自定义消息
-  Future<MessageModel> sendCustom({
-    required int conversationType,
-    required String receiveID,
-    required int contentType,
-    required String content,
-    List<String>? atUserIDList,
-    OfflinePushModel? offlinePush,
-    required MsgOptionsModel msgOptions,
-  }) async {
-    assert(contentType > ContentType.file);
-    return _sdkManager.sendMsg(
-      conversationType: conversationType,
-      receiveID: receiveID,
-      contentType: contentType,
-      content: content,
-      atUserIDList: atUserIDList,
-      offlinePush: offlinePush,
-      msgOptions: msgOptions,
-    );
-  }
-
-  /// 删除消息
-  Future<bool> deleteMessage({
+  /// 删除本地消息
+  Future<bool> deleteLocalMessage({
     required String conversationID,
     required String clientMsgID,
   }) async {
@@ -264,8 +264,8 @@ class MessageManager {
     return count != null && count != 0;
   }
 
-  /// 清空消息
-  Future<bool> clearMessage({
+  /// 清空本地消息
+  Future<bool> clearLocalMessage({
     required String conversationID,
   }) async {
     int? count = await _messageTable.delete(conversationID);

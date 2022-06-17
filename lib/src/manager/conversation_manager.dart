@@ -1,4 +1,3 @@
-import 'package:path_im_core_flutter/path_im_core_flutter.dart';
 import 'package:path_im_sdk_flutter/src/database/sdk_database.dart';
 import 'package:path_im_sdk_flutter/src/manager/sdk_manager.dart';
 import 'package:path_im_sdk_flutter/src/model/conversation_model.dart';
@@ -20,7 +19,7 @@ class ConversationManager {
     );
   }
 
-  /// 自定义条件获取会话列表
+  /// 获取会话列表
   Future<List<ConversationModel>> getConversationList({
     String? where,
     List<Object?>? whereArgs,
@@ -76,11 +75,8 @@ class ConversationManager {
   Future<bool> markConversationRead({
     required int conversationType,
     required String conversationID,
+    required String receiveID,
   }) async {
-    String receiveID = conversationID;
-    if (conversationType == ConversationType.group) {
-      receiveID = receiveID.replaceFirst("group_", "");
-    }
     List<MessageModel> list = await _messageManager.getMessageList(
       conversationID: conversationID,
       where: "sendID != ? AND markRead = ?",
@@ -105,13 +101,18 @@ class ConversationManager {
     return count != null;
   }
 
-  /// 删除会话
-  Future<bool> deleteConversation({
+  /// 获取总未读数
+  Future<int> getTotalUnread() async {
+    return await _conversationTable.queryTotalUnread();
+  }
+
+  /// 删除本地会话
+  Future<bool> deleteLocalConversation({
     required String conversationID,
-    bool clearMessage = true,
+    bool clearLocalMessage = true,
   }) async {
-    if (clearMessage) {
-      await _messageManager.clearMessage(
+    if (clearLocalMessage) {
+      await _messageManager.clearLocalMessage(
         conversationID: conversationID,
       );
     }
@@ -120,10 +121,5 @@ class ConversationManager {
       whereArgs: [conversationID],
     );
     return count != null;
-  }
-
-  /// 获取总未读消息数
-  Future<int> getTotalUnread() async {
-    return await _conversationTable.queryTotalUnread();
   }
 }

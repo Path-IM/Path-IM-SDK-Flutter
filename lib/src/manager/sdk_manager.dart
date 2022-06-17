@@ -217,6 +217,7 @@ class SDKManager {
       ConversationModel conversation = ConversationModel(
         conversationID: conversationID,
         conversationType: message.conversationType,
+        receiveID: message.receiveID,
       );
       if (msgOptions.updateConversation) {
         conversation.message = message;

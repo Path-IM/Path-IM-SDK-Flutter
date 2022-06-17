@@ -14,6 +14,7 @@ class ConversationTable {
       "CREATE TABLE $tableName"
       "(conversationID TEXT PRIMARY KEY,"
       "conversationType INTEGER,"
+      "receiveID TEXT,"
       "message TEXT,"
       "messageTime INTEGER,"
       "unreadCount INTEGER,"
