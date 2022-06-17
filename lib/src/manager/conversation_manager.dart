@@ -73,8 +73,8 @@ class ConversationManager {
 
   /// 已读会话
   Future<bool> markConversationRead({
-    required int conversationType,
     required String conversationID,
+    required int conversationType,
     required String receiveID,
   }) async {
     List<MessageModel> list = await _messageManager.getMessageList(
