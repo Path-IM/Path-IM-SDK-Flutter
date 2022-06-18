@@ -295,8 +295,8 @@ class SDKManager {
               txn: txn,
             );
             conversationListener?.update(conversation);
-            await _calculateTotalUnread(txn);
           }
+          await _calculateTotalUnread(txn);
         } else {
           if (message.conversationType == ConversationType.single) {
             readReceiptListener?.single(clientMsgID);

@@ -80,7 +80,7 @@ class ConversationManager {
     List<MessageModel> list = await _messageManager.getMessageList(
       conversationID: conversationID,
       where: "sendID != ? AND markRead = ?",
-      whereArgs: [receiveID, 0],
+      whereArgs: [_sdkManager.userID, 0],
     );
     if (list.isNotEmpty) {
       List<String> clientMsgIDList = [];
