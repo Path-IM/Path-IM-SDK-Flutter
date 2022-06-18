@@ -375,7 +375,7 @@ class SDKManager {
   }) async {
     String clientMsgID = SDKTool.getClientMsgID();
     int clientTime = DateTime.now().millisecondsSinceEpoch;
-    MessageModel messageModel = MessageModel(
+    MessageModel message = MessageModel(
       clientMsgID: clientMsgID,
       conversationType: conversationType,
       sendID: userID,
@@ -388,18 +388,16 @@ class SDKManager {
       msgOptions: msgOptions,
       sendStatus: SendStatus.sending,
     );
-    if (msgOptions.local) {
+    await sdkDatabase.database!.transaction((txn) async {
       String conversationID;
       if (conversationType == ConversationType.single) {
         conversationID = "single_$receiveID";
       } else {
         conversationID = "group_$receiveID";
       }
-      await messageTable.insert(
-        conversationID,
-        messageModel.toJsonMap(),
-      );
-    }
+      await _updateMessage(conversationID, message, txn);
+      await _updateConversation(conversationID, message, txn);
+    });
     PathIMCore.instance.sendMsg(
       clientMsgID: clientMsgID,
       conversationType: conversationType,
@@ -426,7 +424,7 @@ class SDKManager {
         updateConversation: msgOptions.updateConversation,
       ),
     );
-    return messageModel;
+    return message;
   }
 
   /// 发送消息回执

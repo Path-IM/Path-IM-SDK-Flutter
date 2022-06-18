@@ -84,8 +84,8 @@ class ConversationManager {
     );
     if (list.isNotEmpty) {
       List<String> clientMsgIDList = [];
-      for (MessageModel messageModel in list) {
-        clientMsgIDList.add(messageModel.clientMsgID);
+      for (MessageModel message in list) {
+        clientMsgIDList.add(message.clientMsgID);
       }
       _messageManager.markMessageRead(
         conversationType: conversationType,
