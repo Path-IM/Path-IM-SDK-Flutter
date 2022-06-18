@@ -1,22 +1,14 @@
+import 'package:path_im_sdk_flutter/src/model/message_model.dart';
+
 /// 已读回执监听
 class ReadReceiptListener {
-  final Function(String clientMsgID)? onSingle; // 单聊被读
-  final Function(String clientMsgID, int readCount)? onGroup; // 群聊被读
+  final Function(MessageModel message)? onRead; // 被读消息
 
   ReadReceiptListener({
-    this.onSingle,
-    this.onGroup,
+    this.onRead,
   });
 
-  void single(String clientMsgID) {
-    if (onSingle != null) {
-      onSingle!(clientMsgID);
-    }
-  }
-
-  void group(String clientMsgID, int readCount) {
-    if (onGroup != null) {
-      onGroup!(clientMsgID, readCount);
-    }
+  void read(MessageModel message) {
+    if (onRead != null) onRead!(message);
   }
 }

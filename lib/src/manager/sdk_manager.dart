@@ -262,15 +262,17 @@ class SDKManager {
       if (list == null || list.isEmpty) continue;
       MessageModel messageModel = MessageModel.fromJsonMap(list.first);
       if (messageModel.markRead == true) continue;
+      messageModel.markRead = true;
       int readCount = 0;
       if (message.conversationType == ConversationType.group) {
         if (messageModel.readCount != null) {
           readCount = messageModel.readCount!;
         }
       }
+      messageModel.readCount = ++readCount;
       int? value = await messageTable.update(
         conversationID,
-        {"markRead": 1, "readCount": ++readCount},
+        {"markRead": 1, "readCount": messageModel.readCount},
         where: "clientMsgID = ?",
         whereArgs: [clientMsgID],
         txn: txn,
@@ -298,11 +300,7 @@ class SDKManager {
           }
           await _calculateTotalUnread(txn);
         } else {
-          if (message.conversationType == ConversationType.single) {
-            readReceiptListener?.single(clientMsgID);
-          } else {
-            readReceiptListener?.group(clientMsgID, readCount);
-          }
+          readReceiptListener?.read(messageModel);
         }
       }
     }
@@ -323,15 +321,18 @@ class SDKManager {
       txn: txn,
     );
     if (list == null || list.isEmpty) return;
+    MessageModel? messageModel = MessageModel.fromJsonMap(list.first);
+    messageModel.markRevoke = true;
+    messageModel.revokeContent = content.revokeContent;
     int? value = await messageTable.update(
       conversationID,
-      {"markRevoke": 1, "revokeContent": content.revokeContent},
+      {"markRevoke": 1, "revokeContent": messageModel.revokeContent},
       where: "clientMsgID = ?",
       whereArgs: [clientMsgID],
       txn: txn,
     );
     if (value != null) {
-      revokeReceiptListener?.revoke(clientMsgID);
+      revokeReceiptListener?.revoke(messageModel);
       List<Map<String, dynamic>>? list = await conversationTable.query(
         where: "conversationID = ?",
         whereArgs: [conversationID],
@@ -341,7 +342,7 @@ class SDKManager {
       ConversationModel conversation = ConversationModel.fromJsonMap(
         list.first,
       );
-      MessageModel? messageModel = conversation.message;
+      messageModel = conversation.message;
       if (messageModel != null && messageModel.clientMsgID == clientMsgID) {
         messageModel.markRevoke = true;
         messageModel.revokeContent = content.revokeContent;
