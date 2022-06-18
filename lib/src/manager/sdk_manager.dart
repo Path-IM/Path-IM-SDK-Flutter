@@ -186,15 +186,15 @@ class SDKManager {
     Transaction txn,
   ) async {
     MsgOptionsModel msgOptions = message.msgOptions;
+    if (!msgOptions.updateConversation && !msgOptions.updateUnreadCount) {
+      return;
+    }
     List<Map<String, dynamic>>? list = await conversationTable.query(
       where: "conversationID = ?",
       whereArgs: [conversationID],
       txn: txn,
     );
     if (list != null && list.isNotEmpty) {
-      if (!msgOptions.updateConversation && !msgOptions.updateUnreadCount) {
-        return;
-      }
       ConversationModel conversation = ConversationModel.fromJsonMap(
         list.first,
       );
@@ -347,7 +347,7 @@ class SDKManager {
         messageModel.revokeContent = content.revokeContent;
         conversation.message = messageModel;
         await conversationTable.update(
-          conversation.toJsonMap(),
+          {"message": messageModel.toJson()},
           where: "conversationID = ?",
           whereArgs: [conversationID],
           txn: txn,
