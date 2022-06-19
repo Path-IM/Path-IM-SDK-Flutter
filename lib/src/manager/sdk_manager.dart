@@ -83,38 +83,29 @@ class SDKManager {
     MessageModel message = MessageModel.fromProtobuf(msg);
     message.sendStatus = SendStatus.success;
     await sdkDatabase.database!.transaction((txn) async {
-      String conversationID;
-      if (message.conversationType == ConversationType.single) {
-        if (message.sendID == userID) {
-          conversationID = "single_${message.receiveID}";
-        } else {
-          conversationID = "single_${message.sendID}";
-        }
-      } else {
-        conversationID = "group_${message.receiveID}";
+      int conversationType = message.conversationType;
+      String receiveID = message.receiveID;
+      if (conversationType == ConversationType.single &&
+          message.sendID != userID) {
+        receiveID = message.sendID;
       }
       int? seq = message.seq;
       if (seq != null && seq != 0) {
-        await _pullDefectMessage(
-          message.conversationType,
-          message.receiveID,
-          seq,
-          txn,
-        );
+        await _pullDefectMessage(conversationType, receiveID, seq, txn);
       }
-      await _updateMessage(conversationID, message, txn);
-      await _updateConversation(conversationID, message, txn);
-      if (message.conversationType == ConversationType.single &&
+      await _updateMessage(receiveID, message, txn);
+      await _updateConversation(receiveID, message, txn);
+      if (conversationType == ConversationType.single &&
           message.contentType == ContentType.typing) {
         _updateTyping(message);
         return;
       }
       if (message.contentType == ContentType.read) {
-        _updateRead(conversationID, message, txn);
+        _updateRead(receiveID, message, txn);
         return;
       }
       if (message.contentType == ContentType.revoke) {
-        _updateRevoke(conversationID, message, txn);
+        _updateRevoke(receiveID, message, txn);
         return;
       }
       messageListener?.receiveMsg(message);
@@ -146,13 +137,13 @@ class SDKManager {
 
   /// 更新消息
   Future _updateMessage(
-    String conversationID,
+    String receiveID,
     MessageModel message,
     Transaction txn,
   ) async {
     if (!message.msgOptions.local) return;
     List<Map<String, dynamic>>? list = await messageTable.query(
-      conversationID,
+      receiveID,
       where: "clientMsgID = ?",
       whereArgs: [message.clientMsgID],
       txn: txn,
@@ -164,7 +155,7 @@ class SDKManager {
         "seq": message.seq,
       };
       await messageTable.update(
-        conversationID,
+        receiveID,
         values,
         where: "clientMsgID = ?",
         whereArgs: [message.clientMsgID],
@@ -172,7 +163,7 @@ class SDKManager {
       );
     } else {
       await messageTable.insert(
-        conversationID,
+        receiveID,
         message.toJsonMap(),
         txn: txn,
       );
@@ -181,7 +172,7 @@ class SDKManager {
 
   /// 更新会话
   Future _updateConversation(
-    String conversationID,
+    String receiveID,
     MessageModel message,
     Transaction txn,
   ) async {
@@ -190,8 +181,8 @@ class SDKManager {
       return;
     }
     List<Map<String, dynamic>>? list = await conversationTable.query(
-      where: "conversationID = ?",
-      whereArgs: [conversationID],
+      where: "receiveID = ?",
+      whereArgs: [receiveID],
       txn: txn,
     );
     if (list != null && list.isNotEmpty) {
@@ -208,14 +199,13 @@ class SDKManager {
       }
       await conversationTable.update(
         conversation.toJsonMap(),
-        where: "conversationID = ?",
-        whereArgs: [conversationID],
+        where: "receiveID = ?",
+        whereArgs: [receiveID],
         txn: txn,
       );
       conversationListener?.update(conversation);
     } else {
       ConversationModel conversation = ConversationModel(
-        conversationID: conversationID,
         conversationType: message.conversationType,
         receiveID: message.receiveID,
       );
@@ -246,7 +236,7 @@ class SDKManager {
 
   /// 读取消息
   void _updateRead(
-    String conversationID,
+    String receiveID,
     MessageModel message,
     Transaction txn,
   ) async {
@@ -254,7 +244,7 @@ class SDKManager {
     if (content.clientMsgIDList.isEmpty) return;
     for (String clientMsgID in content.clientMsgIDList) {
       List<Map<String, dynamic>>? list = await messageTable.query(
-        conversationID,
+        receiveID,
         where: "clientMsgID = ?",
         whereArgs: [clientMsgID],
         txn: txn,
@@ -271,7 +261,7 @@ class SDKManager {
       }
       messageModel.readCount = ++readCount;
       int? value = await messageTable.update(
-        conversationID,
+        receiveID,
         {"markRead": 1, "readCount": messageModel.readCount},
         where: "clientMsgID = ?",
         whereArgs: [clientMsgID],
@@ -280,8 +270,8 @@ class SDKManager {
       if (value != null) {
         if (message.sendID == userID) {
           List<Map<String, dynamic>>? list = await conversationTable.query(
-            where: "conversationID = ?",
-            whereArgs: [conversationID],
+            where: "receiveID = ?",
+            whereArgs: [receiveID],
             txn: txn,
           );
           if (list == null || list.isEmpty) return;
@@ -292,8 +282,8 @@ class SDKManager {
           if (unreadCount != null && unreadCount > 0) {
             await conversationTable.update(
               {"unreadCount": --unreadCount},
-              where: "conversationID = ?",
-              whereArgs: [conversationID],
+              where: "receiveID = ?",
+              whereArgs: [receiveID],
               txn: txn,
             );
             conversationListener?.update(conversation);
@@ -308,14 +298,14 @@ class SDKManager {
 
   /// 撤回消息
   void _updateRevoke(
-    String conversationID,
+    String receiveID,
     MessageModel message,
     Transaction txn,
   ) async {
     RevokeContent content = RevokeContent.fromJson(message.content);
     String clientMsgID = content.clientMsgID;
     List<Map<String, dynamic>>? list = await messageTable.query(
-      conversationID,
+      receiveID,
       where: "clientMsgID = ?",
       whereArgs: [clientMsgID],
       txn: txn,
@@ -325,7 +315,7 @@ class SDKManager {
     messageModel.markRevoke = true;
     messageModel.revokeContent = content.revokeContent;
     int? value = await messageTable.update(
-      conversationID,
+      receiveID,
       {"markRevoke": 1, "revokeContent": messageModel.revokeContent},
       where: "clientMsgID = ?",
       whereArgs: [clientMsgID],
@@ -334,8 +324,8 @@ class SDKManager {
     if (value != null) {
       revokeReceiptListener?.revoke(messageModel);
       List<Map<String, dynamic>>? list = await conversationTable.query(
-        where: "conversationID = ?",
-        whereArgs: [conversationID],
+        where: "receiveID = ?",
+        whereArgs: [receiveID],
         txn: txn,
       );
       if (list == null || list.isEmpty) return;
@@ -349,8 +339,8 @@ class SDKManager {
         conversation.message = messageModel;
         await conversationTable.update(
           {"message": messageModel.toJson()},
-          where: "conversationID = ?",
-          whereArgs: [conversationID],
+          where: "receiveID = ?",
+          whereArgs: [receiveID],
           txn: txn,
         );
         conversationListener?.update(conversation);
@@ -390,14 +380,8 @@ class SDKManager {
       sendStatus: SendStatus.sending,
     );
     await sdkDatabase.database!.transaction((txn) async {
-      String conversationID;
-      if (conversationType == ConversationType.single) {
-        conversationID = "single_$receiveID";
-      } else {
-        conversationID = "group_$receiveID";
-      }
-      await _updateMessage(conversationID, message, txn);
-      await _updateConversation(conversationID, message, txn);
+      await _updateMessage(receiveID, message, txn);
+      await _updateConversation(receiveID, message, txn);
     });
     PathIMCore.instance.sendMsg(
       clientMsgID: clientMsgID,
@@ -434,14 +418,9 @@ class SDKManager {
     int status, {
     String? errMsg,
   }) async {
-    String conversationID;
-    if (sendMsgResp.conversationType == ConversationType.single) {
-      conversationID = "single_${sendMsgResp.receiveID}";
-    } else {
-      conversationID = "group_${sendMsgResp.receiveID}";
-    }
+    String receiveID = sendMsgResp.receiveID;
     List<Map<String, dynamic>>? list = await messageTable.query(
-      conversationID,
+      receiveID,
       where: "clientMsgID = ?",
       whereArgs: [sendMsgResp.clientMsgID],
     );
@@ -463,7 +442,7 @@ class SDKManager {
     }
     if (values.isEmpty) return;
     messageTable.update(
-      conversationID,
+      receiveID,
       values,
       where: "clientMsgID = ?",
       whereArgs: [sendMsgResp.clientMsgID],

@@ -11,8 +11,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  path_im_core_flutter:
-    git: https://github.com/Path-IM/Path-IM-Core-Flutter
+  path_im_core_flutter: ^1.0.2
   fixnum: ^1.0.1
   uuid: ^3.0.6
   sqflite: ^2.0.2+1

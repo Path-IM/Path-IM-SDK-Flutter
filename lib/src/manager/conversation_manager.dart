@@ -1,4 +1,3 @@
-import 'package:path_im_core_flutter/path_im_core_flutter.dart';
 import 'package:path_im_sdk_flutter/src/database/sdk_database.dart';
 import 'package:path_im_sdk_flutter/src/manager/sdk_manager.dart';
 import 'package:path_im_sdk_flutter/src/model/conversation_model.dart';
@@ -41,7 +40,7 @@ class ConversationManager {
 
   /// 设置会话草稿
   Future<bool> setConversationDraft({
-    required String conversationID,
+    required String receiveID,
     String? text,
   }) async {
     DraftText? draftText;
@@ -53,21 +52,21 @@ class ConversationManager {
     }
     int? count = await _conversationTable.update(
       {"draftText": draftText?.toJson() ?? ""},
-      where: "conversationID = ?",
-      whereArgs: [conversationID],
+      where: "receiveID = ?",
+      whereArgs: [receiveID],
     );
     return count != null;
   }
 
   /// 设置会话置顶
   Future<bool> setConversationPinned({
-    required String conversationID,
+    required String receiveID,
     required bool isPinned,
   }) async {
     int? count = await _conversationTable.update(
       {"isPinned": isPinned ? 1 : 0},
-      where: "conversationID = ?",
-      whereArgs: [conversationID],
+      where: "receiveID = ?",
+      whereArgs: [receiveID],
     );
     return count != null;
   }
@@ -78,7 +77,6 @@ class ConversationManager {
     required String receiveID,
   }) async {
     List<MessageModel> list = await _messageManager.getMessageList(
-      conversationType: conversationType,
       receiveID: receiveID,
       where: "sendID != ? AND markRead = ?",
       whereArgs: [_sdkManager.userID, 0],
@@ -94,41 +92,27 @@ class ConversationManager {
         clientMsgIDList: clientMsgIDList,
       );
     }
-    String conversationID;
-    if (conversationType == ConversationType.single) {
-      conversationID = "single_$receiveID";
-    } else {
-      conversationID = "group_$receiveID";
-    }
     int? count = await _conversationTable.update(
       {"unreadCount": 0},
-      where: "conversationID = ?",
-      whereArgs: [conversationID],
+      where: "receiveID = ?",
+      whereArgs: [receiveID],
     );
     return count != null;
   }
 
   /// 删除本地会话
   Future<bool> deleteLocalConversation({
-    required int conversationType,
     required String receiveID,
     bool clearLocalMessage = true,
   }) async {
     if (clearLocalMessage) {
       await _messageManager.clearLocalMessage(
-        conversationType: conversationType,
         receiveID: receiveID,
       );
     }
-    String conversationID;
-    if (conversationType == ConversationType.single) {
-      conversationID = "single_$receiveID";
-    } else {
-      conversationID = "group_$receiveID";
-    }
     int? count = await _conversationTable.delete(
-      where: "conversationID = ?",
-      whereArgs: [conversationID],
+      where: "receiveID = ?",
+      whereArgs: [receiveID],
     );
     return count != null;
   }

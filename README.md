@@ -4,7 +4,7 @@
 
 支持Flutter5端开发。实现收发消息、会话和消息列表、草稿置顶、已读撤回等功能。
 
-具体使用参考：[DEMO](https://github.com/Path-IM/Path-IM-SDK-Flutter-Demo)
+使用参考：[DEMO](https://github.com/Path-IM/Path-IM-SDK-Flutter-Demo)
 
 ## 初始化
 
