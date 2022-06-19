@@ -71,7 +71,7 @@ class ConversationManager {
     return count != null;
   }
 
-  /// 已读会话
+  /// 标记会话已读
   Future<bool> markConversationRead({
     required String conversationID,
     required int conversationType,
@@ -101,11 +101,6 @@ class ConversationManager {
     return count != null;
   }
 
-  /// 获取总未读数
-  Future<int> getTotalUnread() async {
-    return await _conversationTable.queryTotalUnread();
-  }
-
   /// 删除本地会话
   Future<bool> deleteLocalConversation({
     required String conversationID,
@@ -121,5 +116,10 @@ class ConversationManager {
       whereArgs: [conversationID],
     );
     return count != null;
+  }
+
+  /// 获取总未读数
+  Future<int> getTotalUnread() async {
+    return await _conversationTable.queryTotalUnread();
   }
 }

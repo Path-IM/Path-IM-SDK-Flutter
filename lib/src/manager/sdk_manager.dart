@@ -95,7 +95,7 @@ class SDKManager {
       }
       int? seq = message.seq;
       if (seq != null && seq != 0) {
-        _pullDefectMessage(
+        await _pullDefectMessage(
           message.conversationType,
           message.receiveID,
           seq,
@@ -110,11 +110,11 @@ class SDKManager {
         return;
       }
       if (message.contentType == ContentType.read) {
-        await _updateRead(conversationID, message, txn);
+        _updateRead(conversationID, message, txn);
         return;
       }
       if (message.contentType == ContentType.revoke) {
-        await _updateRevoke(conversationID, message, txn);
+        _updateRevoke(conversationID, message, txn);
         return;
       }
       messageListener?.receiveMsg(message);
@@ -234,7 +234,7 @@ class SDKManager {
       );
       conversationListener?.added(conversation);
     }
-    await _calculateTotalUnread(txn);
+    _calculateTotalUnread(txn);
   }
 
   /// 正在输入
@@ -245,7 +245,7 @@ class SDKManager {
   }
 
   /// 读取消息
-  Future _updateRead(
+  void _updateRead(
     String conversationID,
     MessageModel message,
     Transaction txn,
@@ -298,7 +298,7 @@ class SDKManager {
             );
             conversationListener?.update(conversation);
           }
-          await _calculateTotalUnread(txn);
+          _calculateTotalUnread(txn);
         } else {
           readReceiptListener?.read(messageModel);
         }
@@ -307,7 +307,7 @@ class SDKManager {
   }
 
   /// 撤回消息
-  Future _updateRevoke(
+  void _updateRevoke(
     String conversationID,
     MessageModel message,
     Transaction txn,
@@ -359,7 +359,7 @@ class SDKManager {
   }
 
   /// 计算总未读数
-  Future _calculateTotalUnread(Transaction txn) async {
+  void _calculateTotalUnread(Transaction txn) async {
     int value = await conversationTable.queryTotalUnread(txn: txn);
     totalUnreadListener?.totalUnread(value);
   }
