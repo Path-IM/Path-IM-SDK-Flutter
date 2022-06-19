@@ -1,3 +1,4 @@
+import 'package:path_im_core_flutter/path_im_core_flutter.dart';
 import 'package:path_im_sdk_flutter/src/database/sdk_database.dart';
 import 'package:path_im_sdk_flutter/src/manager/sdk_manager.dart';
 import 'package:path_im_sdk_flutter/src/model/conversation_model.dart';
@@ -73,7 +74,6 @@ class ConversationManager {
 
   /// 标记会话已读
   Future<bool> markConversationRead({
-    required String conversationID,
     required int conversationType,
     required String receiveID,
   }) async {
@@ -94,6 +94,12 @@ class ConversationManager {
         clientMsgIDList: clientMsgIDList,
       );
     }
+    String conversationID;
+    if (conversationType == ConversationType.single) {
+      conversationID = "single_$receiveID";
+    } else {
+      conversationID = "group_$receiveID";
+    }
     int? count = await _conversationTable.update(
       {"unreadCount": 0},
       where: "conversationID = ?",
@@ -104,7 +110,6 @@ class ConversationManager {
 
   /// 删除本地会话
   Future<bool> deleteLocalConversation({
-    required String conversationID,
     required int conversationType,
     required String receiveID,
     bool clearLocalMessage = true,
@@ -114,6 +119,12 @@ class ConversationManager {
         conversationType: conversationType,
         receiveID: receiveID,
       );
+    }
+    String conversationID;
+    if (conversationType == ConversationType.single) {
+      conversationID = "single_$receiveID";
+    } else {
+      conversationID = "group_$receiveID";
     }
     int? count = await _conversationTable.delete(
       where: "conversationID = ?",
