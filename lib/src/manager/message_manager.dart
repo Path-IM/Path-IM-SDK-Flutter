@@ -4,6 +4,7 @@ import 'package:path_im_sdk_flutter/src/database/sdk_database.dart';
 import 'package:path_im_sdk_flutter/src/manager/sdk_manager.dart';
 import 'package:path_im_sdk_flutter/src/model/message_model.dart';
 import 'package:path_im_sdk_flutter/src/model/sdk_content.dart';
+import 'package:path_im_sdk_flutter/src/tool/sdk_tool.dart';
 
 class MessageManager {
   final SDKManager _sdkManager;
@@ -15,6 +16,7 @@ class MessageManager {
 
   /// 获取消息列表
   Future<List<MessageModel>> getMessageList({
+    required int conversationType,
     required String receiveID,
     String? where,
     List<Object?>? whereArgs,
@@ -23,7 +25,7 @@ class MessageManager {
     int? offset,
   }) async {
     List<Map<String, dynamic>>? list = await _messageTable.query(
-      receiveID,
+      SDKTool.getConversationID(conversationType, receiveID),
       where: where,
       whereArgs: whereArgs,
       orderBy: orderBy,
@@ -253,11 +255,12 @@ class MessageManager {
 
   /// 删除本地消息
   Future<bool> deleteLocalMessage({
+    required int conversationType,
     required String receiveID,
     required String clientMsgID,
   }) async {
     int? count = await _messageTable.delete(
-      receiveID,
+      SDKTool.getConversationID(conversationType, receiveID),
       where: "clientMsgID = ?",
       whereArgs: [clientMsgID],
     );
@@ -266,9 +269,12 @@ class MessageManager {
 
   /// 清空本地消息
   Future<bool> clearLocalMessage({
+    required int conversationType,
     required String receiveID,
   }) async {
-    int? count = await _messageTable.delete(receiveID);
+    int? count = await _messageTable.delete(
+      SDKTool.getConversationID(conversationType, receiveID),
+    );
     return count != null && count != 0;
   }
 }

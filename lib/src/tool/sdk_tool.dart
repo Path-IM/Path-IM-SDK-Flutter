@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:path_im_core_flutter/path_im_core_flutter.dart';
 import 'package:uuid/uuid.dart';
 
 class SDKTool {
@@ -6,6 +7,19 @@ class SDKTool {
 
   static String getClientMsgID() {
     return _uuid.v1().replaceAll("-", "");
+  }
+
+  static String getConversationID(
+    int conversationType,
+    String receiveID,
+  ) {
+    String conversationID;
+    if (conversationType == ConversationType.single) {
+      conversationID = "single_$receiveID";
+    } else {
+      conversationID = "group_$receiveID";
+    }
+    return conversationID;
   }
 
   static String decode(dynamic content) {

@@ -12,8 +12,9 @@ class ConversationTable {
   Future<void> create() async {
     return await _database?.execute(
       "CREATE TABLE $tableName"
-      "(conversationType INTEGER,"
-      "receiveID TEXT PRIMARY KEY,"
+      "(conversationID TEXT PRIMARY KEY"
+      "conversationType INTEGER,"
+      "receiveID TEXT,"
       "message TEXT,"
       "messageTime INTEGER,"
       "unreadCount INTEGER,"
