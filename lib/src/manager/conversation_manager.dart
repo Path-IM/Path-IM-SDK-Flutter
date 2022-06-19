@@ -78,7 +78,8 @@ class ConversationManager {
     required String receiveID,
   }) async {
     List<MessageModel> list = await _messageManager.getMessageList(
-      conversationID: conversationID,
+      conversationType: conversationType,
+      receiveID: receiveID,
       where: "sendID != ? AND markRead = ?",
       whereArgs: [_sdkManager.userID, 0],
     );
@@ -104,11 +105,14 @@ class ConversationManager {
   /// 删除本地会话
   Future<bool> deleteLocalConversation({
     required String conversationID,
+    required int conversationType,
+    required String receiveID,
     bool clearLocalMessage = true,
   }) async {
     if (clearLocalMessage) {
       await _messageManager.clearLocalMessage(
-        conversationID: conversationID,
+        conversationType: conversationType,
+        receiveID: receiveID,
       );
     }
     int? count = await _conversationTable.delete(

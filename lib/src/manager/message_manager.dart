@@ -15,13 +15,20 @@ class MessageManager {
 
   /// 获取消息列表
   Future<List<MessageModel>> getMessageList({
-    required String conversationID,
+    required int conversationType,
+    required String receiveID,
     String? where,
     List<Object?>? whereArgs,
     String orderBy = "clientTime DESC",
     int? limit,
     int? offset,
   }) async {
+    String conversationID;
+    if (conversationType == ConversationType.single) {
+      conversationID = "single_$receiveID";
+    } else {
+      conversationID = "group_$receiveID";
+    }
     List<Map<String, dynamic>>? list = await _messageTable.query(
       conversationID,
       where: where,
@@ -253,9 +260,16 @@ class MessageManager {
 
   /// 删除本地消息
   Future<bool> deleteLocalMessage({
-    required String conversationID,
+    required int conversationType,
+    required String receiveID,
     required String clientMsgID,
   }) async {
+    String conversationID;
+    if (conversationType == ConversationType.single) {
+      conversationID = "single_$receiveID";
+    } else {
+      conversationID = "group_$receiveID";
+    }
     int? count = await _messageTable.delete(
       conversationID,
       where: "clientMsgID = ?",
@@ -266,8 +280,15 @@ class MessageManager {
 
   /// 清空本地消息
   Future<bool> clearLocalMessage({
-    required String conversationID,
+    required int conversationType,
+    required String receiveID,
   }) async {
+    String conversationID;
+    if (conversationType == ConversationType.single) {
+      conversationID = "single_$receiveID";
+    } else {
+      conversationID = "group_$receiveID";
+    }
     int? count = await _messageTable.delete(conversationID);
     return count != null && count != 0;
   }
