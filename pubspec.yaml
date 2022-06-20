@@ -14,8 +14,9 @@ dependencies:
   path_im_core_flutter: ^1.0.2
   fixnum: ^1.0.1
   uuid: ^3.0.6
-  sqflite: ^2.0.2+1
+  sqflite_common: ^2.2.1+1
   sqflite_common_ffi: ^2.1.1
+  sqlite3_flutter_libs: ^0.5.7
   path: ^1.8.1
 
 dev_dependencies:

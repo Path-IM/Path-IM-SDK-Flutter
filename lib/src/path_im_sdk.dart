@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:path_im_core_flutter/path_im_core_flutter.dart';
 import 'package:path_im_sdk_flutter/src/callback/group_id_callback.dart';
 import 'package:path_im_sdk_flutter/src/constant/send_status.dart';
@@ -43,10 +42,6 @@ class PathIMSDK {
     RevokeReceiptListener? revokeReceiptListener,
     TotalUnreadListener? totalUnreadListener,
   }) {
-    if (Platform.isWindows || Platform.isLinux) {
-      sqfliteFfiInit();
-      databaseFactory = databaseFactoryFfi;
-    }
     _sdkManager = SDKManager(
       groupIDCallback: groupIDCallback,
       conversationListener: conversationListener,
