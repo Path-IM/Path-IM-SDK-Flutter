@@ -1,5 +1,4 @@
-import 'package:sqflite_common/sqlite_api.dart';
-import 'package:sqflite_common/utils/utils.dart';
+import 'package:sqflite/sqflite.dart';
 
 class ConversationTable {
   final String tableName = "conversation";
@@ -87,7 +86,7 @@ class ConversationTable {
       "SELECT sum(unreadCount) FROM $tableName",
     );
     if (list != null) {
-      return firstIntValue(list) ?? 0;
+      return Sqflite.firstIntValue(list) ?? 0;
     }
     return 0;
   }

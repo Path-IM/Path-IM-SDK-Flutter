@@ -48,7 +48,6 @@ class SDKManager {
 
   /// 初始化
   void init() {
-    sqfliteFfiInit();
     configTable = ConfigTable();
     conversationTable = ConversationTable();
     messageTable = MessageTable();
