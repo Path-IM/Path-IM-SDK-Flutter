@@ -1,20 +1,34 @@
 import 'dart:convert';
+import 'package:isar/isar.dart';
 import 'package:path_im_core_flutter/path_im_core_flutter.dart';
+import 'package:path_im_sdk_flutter/src/model/converter/message_converter.dart';
 import 'package:path_im_sdk_flutter/src/tool/sdk_tool.dart';
 
+part 'message_model.g.dart';
+
+@Collection()
 class MessageModel {
+  @Id()
+  int? id;
+
   String clientMsgID;
   String? serverMsgID;
+  @Index()
+  String conversationID;
   int conversationType;
   String sendID;
   String receiveID;
+  @Index()
   int contentType;
+  @Index()
   String content;
   List<String>? atUserIDList;
   int clientTime;
   int? serverTime;
   int? seq;
+  @OfflinePushConverter()
   OfflinePushModel? offlinePush;
+  @MsgOptionsConverter()
   MsgOptionsModel msgOptions;
   int? sendStatus;
   bool? markRead;
@@ -25,6 +39,7 @@ class MessageModel {
   MessageModel({
     required this.clientMsgID,
     this.serverMsgID,
+    required this.conversationID,
     required this.conversationType,
     required this.sendID,
     required this.receiveID,
@@ -43,10 +58,11 @@ class MessageModel {
     this.revokeContent,
   });
 
-  static MessageModel fromProtobuf(MsgData msg) {
+  static MessageModel fromProtobuf(MsgData msg, String conversationID) {
     return MessageModel(
       clientMsgID: msg.clientMsgID,
       serverMsgID: msg.serverMsgID,
+      conversationID: conversationID,
       conversationType: msg.conversationType,
       sendID: msg.sendID,
       receiveID: msg.receiveID,
@@ -73,6 +89,7 @@ class MessageModel {
     return MessageModel(
       clientMsgID: map["clientMsgID"],
       serverMsgID: map["serverMsgID"],
+      conversationID: map["conversationID"],
       conversationType: map["conversationType"],
       sendID: map["sendID"],
       receiveID: map["receiveID"],
@@ -96,6 +113,7 @@ class MessageModel {
     return {
       "clientMsgID": clientMsgID,
       "serverMsgID": serverMsgID,
+      "conversationID": conversationID,
       "conversationType": conversationType,
       "sendID": sendID,
       "receiveID": receiveID,

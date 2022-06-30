@@ -1,8 +1,7 @@
-import 'dart:io';
+import 'package:isar/isar.dart';
 import 'package:path_im_core_flutter/path_im_core_flutter.dart';
 import 'package:path_im_sdk_flutter/src/callback/group_id_callback.dart';
 import 'package:path_im_sdk_flutter/src/constant/send_status.dart';
-import 'package:path_im_sdk_flutter/src/database/sdk_database.dart';
 import 'package:path_im_sdk_flutter/src/listener/conversation_listener.dart';
 import 'package:path_im_sdk_flutter/src/listener/message_listener.dart';
 import 'package:path_im_sdk_flutter/src/listener/read_receipt_listener.dart';
@@ -10,6 +9,7 @@ import 'package:path_im_sdk_flutter/src/listener/revoke_receipt_listener.dart';
 import 'package:path_im_sdk_flutter/src/listener/total_unread_listener.dart';
 import 'package:path_im_sdk_flutter/src/listener/typing_receipt_listener.dart';
 import 'package:path_im_sdk_flutter/src/manager/sdk_manager.dart';
+import 'package:path_im_sdk_flutter/src/model/config_model.dart';
 
 class PathIMSDK {
   factory PathIMSDK() => _getInstance();
@@ -43,10 +43,6 @@ class PathIMSDK {
     RevokeReceiptListener? revokeReceiptListener,
     TotalUnreadListener? totalUnreadListener,
   }) {
-    if (Platform.isWindows || Platform.isLinux) {
-      sqfliteFfiInit();
-      databaseFactory = databaseFactoryFfi;
-    }
     _sdkManager = SDKManager(
       groupIDCallback: groupIDCallback,
       conversationListener: conversationListener,
@@ -56,10 +52,8 @@ class PathIMSDK {
       revokeReceiptListener: revokeReceiptListener,
       totalUnreadListener: totalUnreadListener,
     );
-    _sdkManager!.init();
     messageManager = MessageManager(_sdkManager!);
     conversationManager = ConversationManager(_sdkManager!, messageManager);
-    ConfigTable configTable = _sdkManager!.configTable;
     PathIMCore.instance.init(
       wsUrl: wsUrl,
       autoPull: autoPull,
@@ -68,7 +62,12 @@ class PathIMSDK {
       retryTime: retryTime,
       userCallback: UserCallback(
         onMaxSeq: () async {
-          return await configTable.queryMaxSeq() ?? 0;
+          ConfigModel? model = await _sdkManager!
+              .configModels()
+              .filter()
+              .keyEqualTo("maxSeq")
+              .findFirst();
+          return model?.value ?? 0;
         },
       ),
       groupCallback: GroupCallback(
@@ -76,7 +75,12 @@ class PathIMSDK {
           return await groupIDCallback?.groupIDList() ?? [];
         },
         onGroupMaxSeq: (groupID) async {
-          return await configTable.queryGroupMaxSeq(groupID) ?? 0;
+          ConfigModel? model = await _sdkManager!
+              .configModels()
+              .filter()
+              .keyEqualTo("groupMaxSeq_$groupID")
+              .findFirst();
+          return model?.value ?? 0;
         },
       ),
       connectListener: connectListener,

@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:path_im_core_flutter/path_im_core_flutter.dart';
 import 'package:uuid/uuid.dart';
 
 class SDKTool {
@@ -13,13 +12,17 @@ class SDKTool {
     int conversationType,
     String receiveID,
   ) {
-    String conversationID;
-    if (conversationType == ConversationType.single) {
-      conversationID = "single_$receiveID";
-    } else {
-      conversationID = "group_$receiveID";
-    }
-    return conversationID;
+    return "${conversationType}_$receiveID";
+  }
+
+  static Map splitConversationID(
+    String conversationID,
+  ) {
+    List<String> values = conversationID.split("_");
+    return {
+      "conversationType": int.parse(values.first),
+      "receiveID": values.last,
+    };
   }
 
   static String decode(dynamic content) {

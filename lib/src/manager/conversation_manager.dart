@@ -1,42 +1,60 @@
-import 'package:path_im_sdk_flutter/src/database/sdk_database.dart';
+import 'package:isar/isar.dart';
 import 'package:path_im_sdk_flutter/src/manager/sdk_manager.dart';
 import 'package:path_im_sdk_flutter/src/model/conversation_model.dart';
 import 'package:path_im_sdk_flutter/src/model/message_model.dart';
-import 'package:path_im_sdk_flutter/src/tool/sdk_tool.dart';
 
 class ConversationManager {
   final SDKManager _sdkManager;
   final MessageManager _messageManager;
-  late ConversationTable _conversationTable;
 
-  ConversationManager(this._sdkManager, this._messageManager) {
-    _conversationTable = _sdkManager.conversationTable;
-  }
-
-  /// 获取所有会话列表
-  Future<List<ConversationModel>> getAllConversationList() async {
-    return getConversationList(
-      orderBy: "isPinned DESC, draftText DESC, messageTime DESC",
-    );
-  }
+  ConversationManager(this._sdkManager, this._messageManager);
 
   /// 获取会话列表
-  Future<List<ConversationModel>> getConversationList({
-    String? where,
-    List<Object?>? whereArgs,
-    String? orderBy,
-  }) async {
-    List<Map<String, dynamic>>? list = await _conversationTable.query(
-      where: where,
-      whereArgs: whereArgs,
-      orderBy: orderBy,
+  Future<List<ConversationModel>> getConversationList() async {
+    return getCustomConversationList(
+      sortBy: [
+        const SortProperty(
+          property: "isPinned",
+          sort: Sort.desc,
+        ),
+        const SortProperty(
+          property: "draftText",
+          sort: Sort.desc,
+        ),
+        const SortProperty(
+          property: "messageTime",
+          sort: Sort.desc,
+        ),
+      ],
     );
-    if (list != null && list.isNotEmpty) {
-      return list.map((json) {
-        return ConversationModel.fromJsonMap(json);
-      }).toList();
-    }
-    return [];
+  }
+
+  /// 获取自定义会话列表
+  Future<List<ConversationModel>> getCustomConversationList({
+    List<WhereClause> whereClauses = const [],
+    bool whereDistinct = false,
+    Sort whereSort = Sort.asc,
+    FilterOperation? filter,
+    List<SortProperty> sortBy = const [],
+    List<DistinctProperty> distinctBy = const [],
+    int? offset,
+    int? limit,
+    String? property,
+  }) async {
+    return await _sdkManager
+        .conversationModels()
+        .buildQuery<ConversationModel>(
+          whereClauses: whereClauses,
+          whereDistinct: whereDistinct,
+          whereSort: whereSort,
+          filter: filter,
+          sortBy: sortBy,
+          distinctBy: distinctBy,
+          offset: offset,
+          limit: limit,
+          property: property,
+        )
+        .findAll();
   }
 
   /// 设置会话草稿
@@ -44,19 +62,26 @@ class ConversationManager {
     required String conversationID,
     String? text,
   }) async {
-    DraftText? draftText;
+    DraftTextModel? draftText;
     if (text != null) {
-      draftText = DraftText(
+      draftText = DraftTextModel(
         text: text,
         time: DateTime.now().millisecondsSinceEpoch,
       );
     }
-    int? count = await _conversationTable.update(
-      {"draftText": draftText?.toJson() ?? ""},
-      where: "conversationID = ?",
-      whereArgs: [conversationID],
-    );
-    return count != null;
+    ConversationModel? model = await _sdkManager
+        .conversationModels()
+        .filter()
+        .conversationIDEqualTo(conversationID)
+        .findFirst();
+    if (model != null) {
+      model.draftText = draftText;
+      await _sdkManager.isar.writeTxn((isar) async {
+        await _sdkManager.conversationModels().put(model);
+      });
+      return true;
+    }
+    return false;
   }
 
   /// 设置会话置顶
@@ -64,24 +89,44 @@ class ConversationManager {
     required String conversationID,
     required bool isPinned,
   }) async {
-    int? count = await _conversationTable.update(
-      {"isPinned": isPinned ? 1 : 0},
-      where: "conversationID = ?",
-      whereArgs: [conversationID],
-    );
-    return count != null;
+    ConversationModel? model = await _sdkManager
+        .conversationModels()
+        .filter()
+        .conversationIDEqualTo(conversationID)
+        .findFirst();
+    if (model != null) {
+      model.isPinned = isPinned;
+      await _sdkManager.isar.writeTxn((isar) async {
+        await _sdkManager.conversationModels().put(model);
+      });
+      return true;
+    }
+    return false;
   }
 
   /// 标记会话已读
   Future<bool> markConversationRead({
-    required int conversationType,
-    required String receiveID,
+    required String conversationID,
   }) async {
-    List<MessageModel> list = await _messageManager.getMessageList(
-      conversationType: conversationType,
-      receiveID: receiveID,
-      where: "sendID != ? AND markRead = ?",
-      whereArgs: [_sdkManager.userID, 0],
+    List<MessageModel> list = await _messageManager.getCustomMessageList(
+      whereClauses: [
+        IndexWhereClause.equalTo(
+          indexName: "conversationID",
+          value: [conversationID],
+        ),
+      ],
+      filter: FilterGroup.and([
+        FilterCondition(
+          type: ConditionType.eq,
+          property: "sendID",
+          value: _sdkManager.userID,
+        ),
+        FilterCondition(
+          type: ConditionType.eq,
+          property: "markRead",
+          value: 0,
+        ),
+      ]),
     );
     if (list.isNotEmpty) {
       List<String> clientMsgIDList = [];
@@ -89,50 +134,55 @@ class ConversationManager {
         clientMsgIDList.add(message.clientMsgID);
       }
       _messageManager.markMessageRead(
-        conversationType: conversationType,
-        receiveID: receiveID,
+        conversationID: conversationID,
         clientMsgIDList: clientMsgIDList,
       );
     }
-    int? count = await _conversationTable.update(
-      {"unreadCount": 0},
-      where: "conversationID = ?",
-      whereArgs: [
-        SDKTool.getConversationID(
-          conversationType,
-          receiveID,
-        )
-      ],
-    );
-    return count != null;
+    ConversationModel? model = await _sdkManager
+        .conversationModels()
+        .filter()
+        .conversationIDEqualTo(conversationID)
+        .findFirst();
+    if (model != null) {
+      model.unreadCount = 0;
+      await _sdkManager.isar.writeTxn((isar) async {
+        await _sdkManager.conversationModels().put(model);
+      });
+      return true;
+    }
+    return false;
   }
 
   /// 删除本地会话
   Future<bool> deleteLocalConversation({
-    required int conversationType,
-    required String receiveID,
+    required String conversationID,
     bool clearLocalMessage = true,
   }) async {
     if (clearLocalMessage) {
       await _messageManager.clearLocalMessage(
-        conversationType: conversationType,
-        receiveID: receiveID,
+        conversationID: conversationID,
       );
     }
-    int? count = await _conversationTable.delete(
-      where: "conversationID = ?",
-      whereArgs: [
-        SDKTool.getConversationID(
-          conversationType,
-          receiveID,
-        )
-      ],
-    );
-    return count != null;
+    ConversationModel? conversation = await _sdkManager
+        .conversationModels()
+        .filter()
+        .conversationIDEqualTo(conversationID)
+        .findFirst();
+    if (conversation != null) {
+      await _sdkManager.isar.writeTxn((isar) async {
+        await _sdkManager.conversationModels().delete(conversation.id!);
+      });
+      return true;
+    }
+    return false;
   }
 
   /// 获取总未读数
   Future<int> getTotalUnread() async {
-    return await _conversationTable.queryTotalUnread();
+    return await _sdkManager
+        .conversationModels()
+        .where()
+        .unreadCountProperty()
+        .sum();
   }
 }

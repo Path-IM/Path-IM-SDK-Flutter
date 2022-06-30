@@ -1,14 +1,25 @@
 import 'dart:convert';
+import 'package:isar/isar.dart';
+import 'package:path_im_sdk_flutter/src/model/converter/conversation_converter.dart';
 import 'package:path_im_sdk_flutter/src/model/message_model.dart';
 
+part 'conversation_model.g.dart';
+
+@Collection()
 class ConversationModel {
+  @Id()
+  int? id;
+
+  @Index()
   String conversationID;
   int conversationType;
   String receiveID;
+  @MessageConverter()
   MessageModel? message;
   int? messageTime;
   int? unreadCount;
-  DraftText? draftText;
+  @DraftTextConverter()
+  DraftTextModel? draftText;
   bool? isPinned;
 
   ConversationModel({
@@ -33,7 +44,7 @@ class ConversationModel {
         messageTime: map["messageTime"],
         unreadCount: map["unreadCount"],
         draftText: map["draftText"].isNotEmpty
-            ? DraftText.fromJson(map["draftText"])
+            ? DraftTextModel.fromJson(map["draftText"])
             : null,
         isPinned: map["isPinned"] == 1,
       );
@@ -50,18 +61,18 @@ class ConversationModel {
       };
 }
 
-class DraftText {
+class DraftTextModel {
   String text;
   int time;
 
-  DraftText({
+  DraftTextModel({
     required this.text,
     required this.time,
   });
 
-  static DraftText fromJson(String source) {
+  static DraftTextModel fromJson(String source) {
     Map<String, dynamic> map = json.decode(source);
-    return DraftText(
+    return DraftTextModel(
       text: map["text"],
       time: map["time"],
     );

@@ -1,3 +1,8 @@
+## 1.0.1
+
+1、Update core version </br>
+2、Replace database with isar </br>
+
 ## 1.0.0
 
 1、Single chat and group chat </br>
