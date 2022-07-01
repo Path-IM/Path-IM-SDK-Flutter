@@ -64,10 +64,8 @@ class MessageManager {
     List<String>? atUserIDList,
     OfflinePushModel? offlinePush,
   }) {
-    Map map = SDKTool.splitConversationID(conversationID);
     return _sdkManager.sendMsg(
-      conversationType: map["conversationType"],
-      receiveID: map["receiveID"],
+      conversationID: conversationID,
       contentType: ContentType.text,
       content: text,
       atUserIDList: atUserIDList,
@@ -89,10 +87,8 @@ class MessageManager {
     List<String>? atUserIDList,
     OfflinePushModel? offlinePush,
   }) {
-    Map map = SDKTool.splitConversationID(conversationID);
     return _sdkManager.sendMsg(
-      conversationType: map["conversationType"],
-      receiveID: map["receiveID"],
+      conversationID: conversationID,
       contentType: ContentType.picture,
       content: content.toJson(),
       atUserIDList: atUserIDList,
@@ -114,10 +110,8 @@ class MessageManager {
     List<String>? atUserIDList,
     OfflinePushModel? offlinePush,
   }) {
-    Map map = SDKTool.splitConversationID(conversationID);
     return _sdkManager.sendMsg(
-      conversationType: map["conversationType"],
-      receiveID: map["receiveID"],
+      conversationID: conversationID,
       contentType: ContentType.voice,
       content: content.toJson(),
       atUserIDList: atUserIDList,
@@ -139,10 +133,8 @@ class MessageManager {
     List<String>? atUserIDList,
     OfflinePushModel? offlinePush,
   }) {
-    Map map = SDKTool.splitConversationID(conversationID);
     return _sdkManager.sendMsg(
-      conversationType: map["conversationType"],
-      receiveID: map["receiveID"],
+      conversationID: conversationID,
       contentType: ContentType.video,
       content: content.toJson(),
       atUserIDList: atUserIDList,
@@ -164,10 +156,8 @@ class MessageManager {
     List<String>? atUserIDList,
     OfflinePushModel? offlinePush,
   }) {
-    Map map = SDKTool.splitConversationID(conversationID);
     return _sdkManager.sendMsg(
-      conversationType: map["conversationType"],
-      receiveID: map["receiveID"],
+      conversationID: conversationID,
       contentType: ContentType.file,
       content: content.toJson(),
       atUserIDList: atUserIDList,
@@ -192,10 +182,8 @@ class MessageManager {
     required MsgOptionsModel msgOptions,
   }) async {
     assert(contentType > ContentType.file);
-    Map map = SDKTool.splitConversationID(conversationID);
     return _sdkManager.sendMsg(
-      conversationType: map["conversationType"],
-      receiveID: map["receiveID"],
+      conversationID: conversationID,
       contentType: contentType,
       content: content,
       atUserIDList: atUserIDList,
@@ -209,10 +197,8 @@ class MessageManager {
     required String conversationID,
     required bool focus,
   }) {
-    Map map = SDKTool.splitConversationID(conversationID);
     _sdkManager.sendMsg(
-      conversationType: map["conversationType"],
-      receiveID: map["receiveID"],
+      conversationID: conversationID,
       contentType: ContentType.typing,
       content: TypingContent(focus: focus).toJson(),
       msgOptions: MsgOptionsModel(
@@ -230,10 +216,8 @@ class MessageManager {
     required String conversationID,
     required List<String> clientMsgIDList,
   }) {
-    Map map = SDKTool.splitConversationID(conversationID);
     _sdkManager.sendMsg(
-      conversationType: map["conversationType"],
-      receiveID: map["receiveID"],
+      conversationID: conversationID,
       contentType: ContentType.read,
       content: ReadContent(clientMsgIDList: clientMsgIDList).toJson(),
       msgOptions: MsgOptionsModel(
@@ -252,10 +236,8 @@ class MessageManager {
     required String clientMsgID,
     required String revokeContent,
   }) {
-    Map map = SDKTool.splitConversationID(conversationID);
     _sdkManager.sendMsg(
-      conversationType: map["conversationType"],
-      receiveID: map["receiveID"],
+      conversationID: conversationID,
       contentType: ContentType.revoke,
       content: RevokeContent(
         clientMsgID: clientMsgID,

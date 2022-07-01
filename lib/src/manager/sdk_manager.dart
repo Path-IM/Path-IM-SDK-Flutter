@@ -347,15 +347,13 @@ class SDKManager {
 
   /// 计算总未读数
   Future _calculateTotalUnread() async {
-    totalUnreadListener?.totalUnread(
-      await conversationModels().where().unreadCountProperty().sum(),
-    );
+    int count = await conversationModels().where().unreadCountProperty().sum();
+    totalUnreadListener?.totalUnread(count);
   }
 
   /// 发送消息
   Future<MessageModel> sendMsg({
-    required int conversationType,
-    required String receiveID,
+    required String conversationID,
     required int contentType,
     required String content,
     List<String>? atUserIDList,
@@ -363,10 +361,9 @@ class SDKManager {
     required MsgOptionsModel msgOptions,
   }) async {
     String clientMsgID = SDKTool.getClientMsgID();
-    String conversationID = SDKTool.getConversationID(
-      conversationType,
-      receiveID,
-    );
+    Map map = SDKTool.splitConversationID(conversationID);
+    int conversationType = map["conversationType"];
+    String receiveID = map["receiveID"];
     int clientTime = DateTime.now().millisecondsSinceEpoch;
     MessageModel message = MessageModel(
       clientMsgID: clientMsgID,
