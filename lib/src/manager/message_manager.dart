@@ -17,12 +17,13 @@ class MessageManager {
     int? limit,
   }) async {
     return await getCustomMessageList(
-      whereClauses: [
-        IndexWhereClause.equalTo(
-          indexName: "conversationID",
-          value: [conversationID],
+      filter: FilterGroup.and([
+        FilterCondition(
+          type: ConditionType.eq,
+          property: "conversationID",
+          value: conversationID,
         ),
-      ],
+      ]),
       offset: offset,
       limit: limit,
     );

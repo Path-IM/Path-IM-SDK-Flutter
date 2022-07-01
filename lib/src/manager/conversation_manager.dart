@@ -109,13 +109,12 @@ class ConversationManager {
     required String conversationID,
   }) async {
     List<MessageModel> list = await _messageManager.getCustomMessageList(
-      whereClauses: [
-        IndexWhereClause.equalTo(
-          indexName: "conversationID",
-          value: [conversationID],
-        ),
-      ],
       filter: FilterGroup.and([
+        FilterCondition(
+          type: ConditionType.eq,
+          property: "conversationID",
+          value: conversationID,
+        ),
         FilterCondition(
           type: ConditionType.eq,
           property: "sendID",
