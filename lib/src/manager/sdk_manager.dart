@@ -113,7 +113,7 @@ class SDKManager {
   void pullMsg(List<MsgData> msgList) async {
     await isar.writeTxn((isar) async {
       for (MsgData msg in msgList) {
-        _handleMsg(msg);
+        await _handleMsg(msg);
       }
     });
   }
@@ -121,12 +121,12 @@ class SDKManager {
   /// 推送消息
   void pushMsg(MsgData msg) async {
     await isar.writeTxn((isar) async {
-      _handleMsg(msg);
+      await _handleMsg(msg);
     });
   }
 
   /// 处理消息
-  void _handleMsg(MsgData msg) async {
+  Future _handleMsg(MsgData msg) async {
     if (msg.serverMsgID.isEmpty) return;
     int conversationType = msg.conversationType;
     String receiveID = msg.receiveID;
