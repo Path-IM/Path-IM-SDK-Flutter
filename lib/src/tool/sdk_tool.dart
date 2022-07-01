@@ -18,11 +18,9 @@ class SDKTool {
   static Map splitConversationID(
     String conversationID,
   ) {
-    int conversationType = int.parse(conversationID.substring(0, 1));
-    String receiveID = conversationID.substring(2, conversationID.length);
     return {
-      "conversationType": conversationType,
-      "receiveID": receiveID,
+      "conversationType": int.parse(conversationID.substring(0, 1)),
+      "receiveID": conversationID.substring(2, conversationID.length),
     };
   }
 
