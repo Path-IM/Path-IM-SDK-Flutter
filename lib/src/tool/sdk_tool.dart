@@ -18,10 +18,11 @@ class SDKTool {
   static Map splitConversationID(
     String conversationID,
   ) {
-    List<String> values = conversationID.split("_");
+    int conversationType = int.parse(conversationID.substring(0, 1));
+    String receiveID = conversationID.substring(2, conversationID.length);
     return {
-      "conversationType": int.parse(values[0]),
-      "receiveID": values[1],
+      "conversationType": conversationType,
+      "receiveID": receiveID,
     };
   }
 
