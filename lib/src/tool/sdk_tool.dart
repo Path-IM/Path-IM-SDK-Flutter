@@ -20,8 +20,8 @@ class SDKTool {
   ) {
     List<String> values = conversationID.split("_");
     return {
-      "conversationType": int.parse(values.first),
-      "receiveID": values.last,
+      "conversationType": int.parse(values[0]),
+      "receiveID": values[1],
     };
   }
 
