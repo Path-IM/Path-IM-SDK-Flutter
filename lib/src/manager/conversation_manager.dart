@@ -123,7 +123,7 @@ class ConversationManager {
         FilterCondition(
           type: ConditionType.eq,
           property: "markRead",
-          value: 0,
+          value: !true,
         ),
       ]),
     );

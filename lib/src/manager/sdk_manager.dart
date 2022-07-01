@@ -23,6 +23,7 @@ export 'conversation_manager.dart';
 export 'message_manager.dart';
 
 class SDKManager {
+  final bool inspector;
   final GroupIDCallback? groupIDCallback;
   final ConversationListener? conversationListener;
   final MessageListener? messageListener;
@@ -32,6 +33,7 @@ class SDKManager {
   final TotalUnreadListener? totalUnreadListener;
 
   SDKManager({
+    this.inspector = false,
     this.groupIDCallback,
     this.conversationListener,
     this.messageListener,
@@ -55,6 +57,7 @@ class SDKManager {
       ],
       directory: (await path_provider.getApplicationDocumentsDirectory()).path,
       name: userID,
+      inspector: inspector,
     );
     await isar.writeTxn((isar) async {
       ConfigModel? model = await configModels()
@@ -440,6 +443,8 @@ class SDKManager {
       message.sendStatus = SendStatus.limit;
       messageListener?.sendLimit(sendMsgResp.clientMsgID, errMsg!);
     }
-    await messageModels().put(message);
+    await isar.writeTxn((isar) async {
+      await messageModels().put(message);
+    });
   }
 }
