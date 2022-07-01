@@ -11,12 +11,10 @@
      PathIMSDK.instance.init(
        wsUrl: "",
        autoPull: true, // 自动拉取
-       pullTime: const Duration(seconds: 30), // 拉取间隔时间
-       autoRetry: true, // 自动重试
-       retryTime: const Duration(seconds: 3), // 重试间隔时间
+       autoPullTime: const Duration(seconds: 25), // 自动拉取时间
        groupIDCallback: GroupIDCallback(
          onGroupIDList: () async {
-           // 返回登录用户群聊ID
+           // 返回用户群聊IDList
            return [];
          },
        ),
@@ -77,3 +75,14 @@
          },
        ),
      );
+
+## 登录
+
+     PathIMSDK.instance.login(
+       token: "",
+       userID: "",
+     );
+
+## 登出
+
+     PathIMSDK.instance.logout();

@@ -11,7 +11,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  path_im_core_flutter: ^1.0.2
+  path_im_core_flutter: ^1.0.3
   fixnum: ^1.0.1
   uuid: ^3.0.6
   isar: ^2.5.0
