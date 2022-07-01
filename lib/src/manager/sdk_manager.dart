@@ -48,7 +48,11 @@ class SDKManager {
   Future openDatabase({required String userID}) async {
     this.userID = userID;
     isar = await Isar.open(
-      schemas: [],
+      schemas: [
+        ConfigModelSchema,
+        ConversationModelSchema,
+        MessageModelSchema,
+      ],
       directory: (await path_provider.getApplicationDocumentsDirectory()).path,
       name: userID,
     );
