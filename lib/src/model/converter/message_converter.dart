@@ -11,7 +11,7 @@ class OfflinePushConverter extends TypeConverter<OfflinePushModel?, String> {
 
   @override
   String toIsar(OfflinePushModel? object) {
-    throw object?.toJson() ?? "";
+    return object?.toJson() ?? "";
   }
 }
 
@@ -25,6 +25,6 @@ class MsgOptionsConverter extends TypeConverter<MsgOptionsModel, String> {
 
   @override
   String toIsar(MsgOptionsModel object) {
-    throw object.toJson();
+    return object.toJson();
   }
 }

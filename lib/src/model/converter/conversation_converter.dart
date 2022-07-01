@@ -12,7 +12,7 @@ class MessageConverter extends TypeConverter<MessageModel?, String> {
 
   @override
   String toIsar(MessageModel? object) {
-    throw object?.toJson() ?? "";
+    return object?.toJson() ?? "";
   }
 }
 
@@ -26,6 +26,6 @@ class DraftTextConverter extends TypeConverter<DraftTextModel?, String> {
 
   @override
   String toIsar(DraftTextModel? object) {
-    throw object?.toJson() ?? "";
+    return object?.toJson() ?? "";
   }
 }
