@@ -4,11 +4,11 @@
 
 支持Flutter5端开发。实现收发消息、会话和消息列表、草稿置顶、已读撤回等功能。
 
-使用参考：[DEMO](https://github.com/Path-IM/Path-IM-SDK-Flutter-Demo)
+使用参考：[Demo](https://github.com/Path-IM/Path-IM-SDK-Flutter-Demo)
 
 它是空安全的，为什么没有空安全标识？
 
-问题参考：[flutter](https://github.com/flutter/flutter/issues/44937) [pana](https://github.com/dart-lang/pana/issues/891)
+问题参考：[Flutter](https://github.com/flutter/flutter/issues/44937) [Pana](https://github.com/dart-lang/pana/issues/891)
 
 不影响使用和构建，因为它：💪 Building with sound null safety 💪
 
