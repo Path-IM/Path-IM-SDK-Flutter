@@ -209,7 +209,9 @@ class MessageManager {
     _sdkManager.sendMsg(
       conversationID: conversationID,
       contentType: ContentType.typing,
-      content: TypingContent(focus: focus).toJson(),
+      content: TypingContent(
+        focus: focus,
+      ).toJson(),
       msgOptions: MsgOptionsModel(
         persistent: false,
         history: false,
@@ -228,7 +230,9 @@ class MessageManager {
     _sdkManager.sendMsg(
       conversationID: conversationID,
       contentType: ContentType.read,
-      content: ReadContent(clientMsgIDList: clientMsgIDList).toJson(),
+      content: ReadContent(
+        clientMsgIDList: clientMsgIDList,
+      ).toJson(),
       msgOptions: MsgOptionsModel(
         persistent: true,
         history: true,

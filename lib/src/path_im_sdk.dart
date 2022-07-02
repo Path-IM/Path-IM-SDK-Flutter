@@ -32,7 +32,7 @@ class PathIMSDK {
     required String wsUrl,
     bool autoPull = true,
     Duration autoPullTime = const Duration(seconds: 25),
-    bool inspector = false,
+    bool isarInspector = false,
     GroupIDCallback? groupIDCallback,
     ConnectListener? connectListener,
     ConversationListener? conversationListener,
@@ -43,7 +43,7 @@ class PathIMSDK {
     TotalUnreadListener? totalUnreadListener,
   }) {
     _sdkManager = SDKManager(
-      inspector: inspector,
+      isarInspector: isarInspector,
       groupIDCallback: groupIDCallback,
       conversationListener: conversationListener,
       messageListener: messageListener,

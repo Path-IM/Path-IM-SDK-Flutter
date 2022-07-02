@@ -17,13 +17,13 @@ import 'package:path_im_sdk_flutter/src/model/conversation_model.dart';
 import 'package:path_im_sdk_flutter/src/model/message_model.dart';
 import 'package:path_im_sdk_flutter/src/model/sdk_content.dart';
 import 'package:path_im_sdk_flutter/src/tool/sdk_tool.dart';
-import 'package:path_provider/path_provider.dart' as path_provider;
+import 'package:path_provider/path_provider.dart';
 
 export 'conversation_manager.dart';
 export 'message_manager.dart';
 
 class SDKManager {
-  final bool inspector;
+  final bool isarInspector;
   final GroupIDCallback? groupIDCallback;
   final ConversationListener? conversationListener;
   final MessageListener? messageListener;
@@ -33,7 +33,7 @@ class SDKManager {
   final TotalUnreadListener? totalUnreadListener;
 
   SDKManager({
-    this.inspector = false,
+    this.isarInspector = false,
     this.groupIDCallback,
     this.conversationListener,
     this.messageListener,
@@ -55,9 +55,9 @@ class SDKManager {
         ConversationModelSchema,
         MessageModelSchema,
       ],
-      directory: (await path_provider.getApplicationDocumentsDirectory()).path,
+      directory: (await getApplicationDocumentsDirectory()).path,
       name: userID,
-      inspector: inspector,
+      inspector: isarInspector,
     );
     await isar.writeTxn((isar) async {
       ConfigModel? model = await configModels()

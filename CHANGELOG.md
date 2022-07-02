@@ -1,6 +1,10 @@
+## 1.0.4
+
+1、Format code </br>
+
 ## 1.0.3
 
-1、Update README.md </br>
+1、Update readme </br>
 
 ## 1.0.2
 
