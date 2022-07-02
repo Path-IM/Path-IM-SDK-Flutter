@@ -1,8 +1,10 @@
 import 'package:isar/isar.dart';
+import 'package:path_im_core_flutter/path_im_core_flutter.dart';
 import 'package:path_im_sdk_flutter/src/constant/content_type.dart';
 import 'package:path_im_sdk_flutter/src/manager/sdk_manager.dart';
 import 'package:path_im_sdk_flutter/src/model/message_model.dart';
 import 'package:path_im_sdk_flutter/src/model/sdk_content.dart';
+import 'package:path_im_sdk_flutter/src/tool/sdk_tool.dart';
 
 class MessageManager {
   final SDKManager _sdkManager;
@@ -202,6 +204,8 @@ class MessageManager {
     required String conversationID,
     required bool focus,
   }) {
+    Map map = SDKTool.splitConversationID(conversationID);
+    if (map["conversationType"] != ConversationType.single) return;
     _sdkManager.sendMsg(
       conversationID: conversationID,
       contentType: ContentType.typing,

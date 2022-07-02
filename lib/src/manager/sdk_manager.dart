@@ -148,8 +148,7 @@ class SDKManager {
     message.sendStatus = SendStatus.success;
     await _updateMessage(conversationID, message);
     await _updateConversation(conversationID, message);
-    if (conversationType == ConversationType.single &&
-        message.contentType == ContentType.typing) {
+    if (message.contentType == ContentType.typing) {
       _updateTyping(message);
       return;
     }
@@ -263,6 +262,7 @@ class SDKManager {
 
   /// 正在输入
   void _updateTyping(MessageModel message) {
+    if (message.conversationType != ConversationType.single) return;
     if (message.sendID == userID) return;
     TypingContent content = TypingContent.fromJson(message.content);
     typingReceiptListener?.typing(message.sendID, content.focus);
