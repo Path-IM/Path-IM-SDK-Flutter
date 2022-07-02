@@ -11,7 +11,7 @@ class ConversationManager {
 
   /// 获取会话列表
   Future<List<ConversationModel>> getConversationList() async {
-    return getCustomConversationList(
+    return getCustomList(
       sortBy: [
         const SortProperty(
           property: "isPinned",
@@ -30,7 +30,7 @@ class ConversationManager {
   }
 
   /// 获取自定义会话列表
-  Future<List<ConversationModel>> getCustomConversationList({
+  Future<List<ConversationModel>> getCustomList({
     List<WhereClause> whereClauses = const [],
     bool whereDistinct = false,
     Sort whereSort = Sort.asc,
@@ -108,7 +108,7 @@ class ConversationManager {
   Future<bool> markConversationRead({
     required String conversationID,
   }) async {
-    List<MessageModel> list = await _messageManager.getCustomMessageList(
+    List<MessageModel> list = await _messageManager.getCustomList(
       filter: FilterGroup.and([
         FilterCondition(
           type: ConditionType.eq,
@@ -123,7 +123,7 @@ class ConversationManager {
         FilterCondition(
           type: ConditionType.eq,
           property: "markRead",
-          value: !true,
+          value: false,
         ),
       ]),
     );

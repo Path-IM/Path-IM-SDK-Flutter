@@ -93,18 +93,18 @@ class SDKManager {
   }
 
   /// 配置表
-  IsarCollection<ConfigModel> configModels({Isar? isar}) {
-    return (isar ?? this.isar).configModels;
+  IsarCollection<ConfigModel> configModels() {
+    return isar.configModels;
   }
 
   /// 会话表
-  IsarCollection<ConversationModel> conversationModels({Isar? isar}) {
-    return (isar ?? this.isar).conversationModels;
+  IsarCollection<ConversationModel> conversationModels() {
+    return isar.conversationModels;
   }
 
   /// 消息表
-  IsarCollection<MessageModel> messageModels({Isar? isar}) {
-    return (isar ?? this.isar).messageModels;
+  IsarCollection<MessageModel> messageModels() {
+    return isar.messageModels;
   }
 
   /// 关闭数据库
@@ -178,8 +178,9 @@ class SDKManager {
             "maxSeq",
           )
           .findFirst();
+      if (model == null) return;
       PathIMCore.instance.pullSingleMsg(
-        seqList: SDKTool.generateSeqList(seq, model!.value),
+        seqList: SDKTool.generateSeqList(seq, model.value),
       );
     } else {
       model = await configModels()
@@ -188,9 +189,10 @@ class SDKManager {
             "groupMaxSeq_$receiveID",
           )
           .findFirst();
+      if (model == null) return;
       PathIMCore.instance.pullGroupMsg(
         groupID: receiveID,
-        seqList: SDKTool.generateSeqList(seq, model!.value),
+        seqList: SDKTool.generateSeqList(seq, model.value),
       );
     }
     model.value = seq;
@@ -206,6 +208,7 @@ class SDKManager {
     MessageModel? messageModel = await messageModels()
         .filter()
         .conversationIDEqualTo(conversationID)
+        .and()
         .clientMsgIDEqualTo(message.clientMsgID)
         .findFirst();
     if (messageModel != null) {
@@ -224,9 +227,7 @@ class SDKManager {
     MessageModel message,
   ) async {
     MsgOptionsModel msgOptions = message.msgOptions;
-    if (!msgOptions.updateConversation && !msgOptions.updateUnreadCount) {
-      return;
-    }
+    if (!msgOptions.updateConversation && !msgOptions.updateUnreadCount) return;
     ConversationModel? conversation = await conversationModels()
         .filter()
         .conversationIDEqualTo(conversationID)
@@ -234,11 +235,10 @@ class SDKManager {
     if (conversation != null) {
       if (msgOptions.updateConversation) {
         conversation.message = message;
-        conversation.messageTime = message.clientTime;
+        conversation.messageTime = message.serverTime ?? message.clientTime;
       }
       if (msgOptions.updateUnreadCount && message.sendID != userID) {
-        int unreadCount = conversation.unreadCount!;
-        conversation.unreadCount = ++unreadCount;
+        conversation.unreadCount = ++conversation.unreadCount;
       }
       await conversationModels().put(conversation);
       conversationListener?.update(conversation);
@@ -250,12 +250,10 @@ class SDKManager {
       );
       if (msgOptions.updateConversation) {
         conversation.message = message;
-        conversation.messageTime = message.clientTime;
+        conversation.messageTime = message.serverTime ?? message.clientTime;
       }
       if (msgOptions.updateUnreadCount && message.sendID != userID) {
         conversation.unreadCount = 1;
-      } else {
-        conversation.unreadCount = 0;
       }
       await conversationModels().put(conversation);
       conversationListener?.added(conversation);
@@ -281,6 +279,7 @@ class SDKManager {
       MessageModel? messageModel = await messageModels()
           .filter()
           .conversationIDEqualTo(conversationID)
+          .and()
           .clientMsgIDEqualTo(clientMsgID)
           .findFirst();
       if (messageModel == null) continue;
@@ -288,9 +287,7 @@ class SDKManager {
       messageModel.markRead = true;
       int readCount = 0;
       if (message.conversationType == ConversationType.group) {
-        if (messageModel.readCount != null) {
-          readCount = messageModel.readCount!;
-        }
+        readCount = messageModel.readCount;
       }
       messageModel.readCount = ++readCount;
       await messageModels().put(messageModel);
@@ -300,8 +297,8 @@ class SDKManager {
             .conversationIDEqualTo(conversationID)
             .findFirst();
         if (conversation == null) continue;
-        int? unreadCount = conversation.unreadCount;
-        if (unreadCount != null && unreadCount > 0) {
+        int unreadCount = conversation.unreadCount;
+        if (unreadCount > 0) {
           conversation.unreadCount = --unreadCount;
           await conversationModels().put(conversation);
           conversationListener?.update(conversation);
@@ -323,6 +320,7 @@ class SDKManager {
     MessageModel? messageModel = await messageModels()
         .filter()
         .conversationIDEqualTo(conversationID)
+        .and()
         .clientMsgIDEqualTo(clientMsgID)
         .findFirst();
     if (messageModel == null) return;
@@ -377,7 +375,6 @@ class SDKManager {
       clientTime: clientTime,
       offlinePush: offlinePush,
       msgOptions: msgOptions,
-      sendStatus: SendStatus.sending,
     );
     await isar.writeTxn((isar) async {
       await _updateMessage(conversationID, message);
@@ -425,6 +422,7 @@ class SDKManager {
     MessageModel? message = await messageModels()
         .filter()
         .conversationIDEqualTo(conversationID)
+        .and()
         .clientMsgIDEqualTo(sendMsgResp.clientMsgID)
         .findFirst();
     if (message == null) return;

@@ -15,7 +15,7 @@ extension GetMessageModelCollection on Isar {
 const MessageModelSchema = CollectionSchema(
   name: 'MessageModel',
   schema:
-      '{"name":"MessageModel","idName":"id","properties":[{"name":"atUserIDList","type":"StringList"},{"name":"clientMsgID","type":"String"},{"name":"clientTime","type":"Long"},{"name":"content","type":"String"},{"name":"contentType","type":"Long"},{"name":"conversationID","type":"String"},{"name":"conversationType","type":"Long"},{"name":"markRead","type":"Bool"},{"name":"markRevoke","type":"Bool"},{"name":"msgOptions","type":"String"},{"name":"offlinePush","type":"String"},{"name":"readCount","type":"Long"},{"name":"receiveID","type":"String"},{"name":"revokeContent","type":"String"},{"name":"sendID","type":"String"},{"name":"sendStatus","type":"Long"},{"name":"seq","type":"Long"},{"name":"serverMsgID","type":"String"},{"name":"serverTime","type":"Long"}],"indexes":[{"name":"content","unique":false,"properties":[{"name":"content","type":"Hash","caseSensitive":true}]},{"name":"contentType","unique":false,"properties":[{"name":"contentType","type":"Value","caseSensitive":false}]},{"name":"conversationID","unique":false,"properties":[{"name":"conversationID","type":"Hash","caseSensitive":true}]}],"links":[]}',
+      '{"name":"MessageModel","idName":"id","properties":[{"name":"atUserIDList","type":"StringList"},{"name":"clientMsgID","type":"String"},{"name":"clientTime","type":"Long"},{"name":"content","type":"String"},{"name":"contentType","type":"Long"},{"name":"conversationID","type":"String"},{"name":"conversationType","type":"Long"},{"name":"markRead","type":"Bool"},{"name":"markRevoke","type":"Bool"},{"name":"msgOptions","type":"String"},{"name":"offlinePush","type":"String"},{"name":"readCount","type":"Long"},{"name":"receiveID","type":"String"},{"name":"revokeContent","type":"String"},{"name":"sendID","type":"String"},{"name":"sendStatus","type":"Long"},{"name":"seq","type":"Long"},{"name":"serverMsgID","type":"String"},{"name":"serverTime","type":"Long"}],"indexes":[{"name":"clientMsgID","unique":false,"properties":[{"name":"clientMsgID","type":"Hash","caseSensitive":true}]},{"name":"content","unique":false,"properties":[{"name":"content","type":"Hash","caseSensitive":true}]},{"name":"contentType","unique":false,"properties":[{"name":"contentType","type":"Value","caseSensitive":false}]},{"name":"conversationID","unique":false,"properties":[{"name":"conversationID","type":"Hash","caseSensitive":true}]}],"links":[]}',
   idName: 'id',
   propertyIds: {
     'atUserIDList': 0,
@@ -39,8 +39,16 @@ const MessageModelSchema = CollectionSchema(
     'serverTime': 18
   },
   listProperties: {'atUserIDList'},
-  indexIds: {'content': 0, 'contentType': 1, 'conversationID': 2},
+  indexIds: {
+    'clientMsgID': 0,
+    'content': 1,
+    'contentType': 2,
+    'conversationID': 3
+  },
   indexValueTypes: {
+    'clientMsgID': [
+      IndexValueType.stringHash,
+    ],
     'content': [
       IndexValueType.stringHash,
     ],
@@ -136,11 +144,8 @@ void _messageModelSerializeNative(
   final _receiveID = IsarBinaryWriter.utf8Encoder.convert(value12);
   dynamicSize += (_receiveID.length) as int;
   final value13 = object.revokeContent;
-  IsarUint8List? _revokeContent;
-  if (value13 != null) {
-    _revokeContent = IsarBinaryWriter.utf8Encoder.convert(value13);
-  }
-  dynamicSize += (_revokeContent?.length ?? 0) as int;
+  final _revokeContent = IsarBinaryWriter.utf8Encoder.convert(value13);
+  dynamicSize += (_revokeContent.length) as int;
   final value14 = object.sendID;
   final _sendID = IsarBinaryWriter.utf8Encoder.convert(value14);
   dynamicSize += (_sendID.length) as int;
@@ -196,17 +201,17 @@ MessageModel _messageModelDeserializeNative(
     contentType: reader.readLong(offsets[4]),
     conversationID: reader.readString(offsets[5]),
     conversationType: reader.readLong(offsets[6]),
-    markRead: reader.readBoolOrNull(offsets[7]),
-    markRevoke: reader.readBoolOrNull(offsets[8]),
+    markRead: reader.readBool(offsets[7]),
+    markRevoke: reader.readBool(offsets[8]),
     msgOptions: _messageModelMsgOptionsConverter
         .fromIsar(reader.readString(offsets[9])),
     offlinePush: _messageModelOfflinePushConverter
         .fromIsar(reader.readString(offsets[10])),
-    readCount: reader.readLongOrNull(offsets[11]),
+    readCount: reader.readLong(offsets[11]),
     receiveID: reader.readString(offsets[12]),
-    revokeContent: reader.readStringOrNull(offsets[13]),
+    revokeContent: reader.readString(offsets[13]),
     sendID: reader.readString(offsets[14]),
-    sendStatus: reader.readLongOrNull(offsets[15]),
+    sendStatus: reader.readLong(offsets[15]),
     seq: reader.readLongOrNull(offsets[16]),
     serverMsgID: reader.readStringOrNull(offsets[17]),
     serverTime: reader.readLongOrNull(offsets[18]),
@@ -235,9 +240,9 @@ P _messageModelDeserializePropNative<P>(
     case 6:
       return (reader.readLong(offset)) as P;
     case 7:
-      return (reader.readBoolOrNull(offset)) as P;
+      return (reader.readBool(offset)) as P;
     case 8:
-      return (reader.readBoolOrNull(offset)) as P;
+      return (reader.readBool(offset)) as P;
     case 9:
       return (_messageModelMsgOptionsConverter
           .fromIsar(reader.readString(offset))) as P;
@@ -245,15 +250,15 @@ P _messageModelDeserializePropNative<P>(
       return (_messageModelOfflinePushConverter
           .fromIsar(reader.readString(offset))) as P;
     case 11:
-      return (reader.readLongOrNull(offset)) as P;
+      return (reader.readLong(offset)) as P;
     case 12:
       return (reader.readString(offset)) as P;
     case 13:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readString(offset)) as P;
     case 14:
       return (reader.readString(offset)) as P;
     case 15:
-      return (reader.readLongOrNull(offset)) as P;
+      return (reader.readLong(offset)) as P;
     case 16:
       return (reader.readLongOrNull(offset)) as P;
     case 17:
@@ -309,17 +314,19 @@ MessageModel _messageModelDeserializeWeb(
     conversationID: IsarNative.jsObjectGet(jsObj, 'conversationID') ?? '',
     conversationType: IsarNative.jsObjectGet(jsObj, 'conversationType') ??
         double.negativeInfinity,
-    markRead: IsarNative.jsObjectGet(jsObj, 'markRead'),
-    markRevoke: IsarNative.jsObjectGet(jsObj, 'markRevoke'),
+    markRead: IsarNative.jsObjectGet(jsObj, 'markRead') ?? false,
+    markRevoke: IsarNative.jsObjectGet(jsObj, 'markRevoke') ?? false,
     msgOptions: _messageModelMsgOptionsConverter
         .fromIsar(IsarNative.jsObjectGet(jsObj, 'msgOptions') ?? ''),
     offlinePush: _messageModelOfflinePushConverter
         .fromIsar(IsarNative.jsObjectGet(jsObj, 'offlinePush') ?? ''),
-    readCount: IsarNative.jsObjectGet(jsObj, 'readCount'),
+    readCount:
+        IsarNative.jsObjectGet(jsObj, 'readCount') ?? double.negativeInfinity,
     receiveID: IsarNative.jsObjectGet(jsObj, 'receiveID') ?? '',
-    revokeContent: IsarNative.jsObjectGet(jsObj, 'revokeContent'),
+    revokeContent: IsarNative.jsObjectGet(jsObj, 'revokeContent') ?? '',
     sendID: IsarNative.jsObjectGet(jsObj, 'sendID') ?? '',
-    sendStatus: IsarNative.jsObjectGet(jsObj, 'sendStatus'),
+    sendStatus:
+        IsarNative.jsObjectGet(jsObj, 'sendStatus') ?? double.negativeInfinity,
     seq: IsarNative.jsObjectGet(jsObj, 'seq'),
     serverMsgID: IsarNative.jsObjectGet(jsObj, 'serverMsgID'),
     serverTime: IsarNative.jsObjectGet(jsObj, 'serverTime'),
@@ -353,9 +360,9 @@ P _messageModelDeserializePropWeb<P>(Object jsObj, String propertyName) {
     case 'id':
       return (IsarNative.jsObjectGet(jsObj, 'id')) as P;
     case 'markRead':
-      return (IsarNative.jsObjectGet(jsObj, 'markRead')) as P;
+      return (IsarNative.jsObjectGet(jsObj, 'markRead') ?? false) as P;
     case 'markRevoke':
-      return (IsarNative.jsObjectGet(jsObj, 'markRevoke')) as P;
+      return (IsarNative.jsObjectGet(jsObj, 'markRevoke') ?? false) as P;
     case 'msgOptions':
       return (_messageModelMsgOptionsConverter
           .fromIsar(IsarNative.jsObjectGet(jsObj, 'msgOptions') ?? '')) as P;
@@ -363,15 +370,17 @@ P _messageModelDeserializePropWeb<P>(Object jsObj, String propertyName) {
       return (_messageModelOfflinePushConverter
           .fromIsar(IsarNative.jsObjectGet(jsObj, 'offlinePush') ?? '')) as P;
     case 'readCount':
-      return (IsarNative.jsObjectGet(jsObj, 'readCount')) as P;
+      return (IsarNative.jsObjectGet(jsObj, 'readCount') ??
+          double.negativeInfinity) as P;
     case 'receiveID':
       return (IsarNative.jsObjectGet(jsObj, 'receiveID') ?? '') as P;
     case 'revokeContent':
-      return (IsarNative.jsObjectGet(jsObj, 'revokeContent')) as P;
+      return (IsarNative.jsObjectGet(jsObj, 'revokeContent') ?? '') as P;
     case 'sendID':
       return (IsarNative.jsObjectGet(jsObj, 'sendID') ?? '') as P;
     case 'sendStatus':
-      return (IsarNative.jsObjectGet(jsObj, 'sendStatus')) as P;
+      return (IsarNative.jsObjectGet(jsObj, 'sendStatus') ??
+          double.negativeInfinity) as P;
     case 'seq':
       return (IsarNative.jsObjectGet(jsObj, 'seq')) as P;
     case 'serverMsgID':
@@ -390,6 +399,11 @@ extension MessageModelQueryWhereSort
     on QueryBuilder<MessageModel, MessageModel, QWhere> {
   QueryBuilder<MessageModel, MessageModel, QAfterWhere> anyId() {
     return addWhereClauseInternal(const IdWhereClause.any());
+  }
+
+  QueryBuilder<MessageModel, MessageModel, QAfterWhere> anyClientMsgID() {
+    return addWhereClauseInternal(
+        const IndexWhereClause.any(indexName: 'clientMsgID'));
   }
 
   QueryBuilder<MessageModel, MessageModel, QAfterWhere> anyContent() {
@@ -464,6 +478,39 @@ extension MessageModelQueryWhere
       upper: upperId,
       includeUpper: includeUpper,
     ));
+  }
+
+  QueryBuilder<MessageModel, MessageModel, QAfterWhereClause>
+      clientMsgIDEqualTo(String clientMsgID) {
+    return addWhereClauseInternal(IndexWhereClause.equalTo(
+      indexName: 'clientMsgID',
+      value: [clientMsgID],
+    ));
+  }
+
+  QueryBuilder<MessageModel, MessageModel, QAfterWhereClause>
+      clientMsgIDNotEqualTo(String clientMsgID) {
+    if (whereSortInternal == Sort.asc) {
+      return addWhereClauseInternal(IndexWhereClause.lessThan(
+        indexName: 'clientMsgID',
+        upper: [clientMsgID],
+        includeUpper: false,
+      )).addWhereClauseInternal(IndexWhereClause.greaterThan(
+        indexName: 'clientMsgID',
+        lower: [clientMsgID],
+        includeLower: false,
+      ));
+    } else {
+      return addWhereClauseInternal(IndexWhereClause.greaterThan(
+        indexName: 'clientMsgID',
+        lower: [clientMsgID],
+        includeLower: false,
+      )).addWhereClauseInternal(IndexWhereClause.lessThan(
+        indexName: 'clientMsgID',
+        upper: [clientMsgID],
+        includeUpper: false,
+      ));
+    }
   }
 
   QueryBuilder<MessageModel, MessageModel, QAfterWhereClause> contentEqualTo(
@@ -1264,16 +1311,7 @@ extension MessageModelQueryFilter
   }
 
   QueryBuilder<MessageModel, MessageModel, QAfterFilterCondition>
-      markReadIsNull() {
-    return addFilterConditionInternal(FilterCondition(
-      type: ConditionType.isNull,
-      property: 'markRead',
-      value: null,
-    ));
-  }
-
-  QueryBuilder<MessageModel, MessageModel, QAfterFilterCondition>
-      markReadEqualTo(bool? value) {
+      markReadEqualTo(bool value) {
     return addFilterConditionInternal(FilterCondition(
       type: ConditionType.eq,
       property: 'markRead',
@@ -1282,16 +1320,7 @@ extension MessageModelQueryFilter
   }
 
   QueryBuilder<MessageModel, MessageModel, QAfterFilterCondition>
-      markRevokeIsNull() {
-    return addFilterConditionInternal(FilterCondition(
-      type: ConditionType.isNull,
-      property: 'markRevoke',
-      value: null,
-    ));
-  }
-
-  QueryBuilder<MessageModel, MessageModel, QAfterFilterCondition>
-      markRevokeEqualTo(bool? value) {
+      markRevokeEqualTo(bool value) {
     return addFilterConditionInternal(FilterCondition(
       type: ConditionType.eq,
       property: 'markRevoke',
@@ -1514,16 +1543,7 @@ extension MessageModelQueryFilter
   }
 
   QueryBuilder<MessageModel, MessageModel, QAfterFilterCondition>
-      readCountIsNull() {
-    return addFilterConditionInternal(FilterCondition(
-      type: ConditionType.isNull,
-      property: 'readCount',
-      value: null,
-    ));
-  }
-
-  QueryBuilder<MessageModel, MessageModel, QAfterFilterCondition>
-      readCountEqualTo(int? value) {
+      readCountEqualTo(int value) {
     return addFilterConditionInternal(FilterCondition(
       type: ConditionType.eq,
       property: 'readCount',
@@ -1533,7 +1553,7 @@ extension MessageModelQueryFilter
 
   QueryBuilder<MessageModel, MessageModel, QAfterFilterCondition>
       readCountGreaterThan(
-    int? value, {
+    int value, {
     bool include = false,
   }) {
     return addFilterConditionInternal(FilterCondition(
@@ -1546,7 +1566,7 @@ extension MessageModelQueryFilter
 
   QueryBuilder<MessageModel, MessageModel, QAfterFilterCondition>
       readCountLessThan(
-    int? value, {
+    int value, {
     bool include = false,
   }) {
     return addFilterConditionInternal(FilterCondition(
@@ -1559,8 +1579,8 @@ extension MessageModelQueryFilter
 
   QueryBuilder<MessageModel, MessageModel, QAfterFilterCondition>
       readCountBetween(
-    int? lower,
-    int? upper, {
+    int lower,
+    int upper, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
@@ -1681,17 +1701,8 @@ extension MessageModelQueryFilter
   }
 
   QueryBuilder<MessageModel, MessageModel, QAfterFilterCondition>
-      revokeContentIsNull() {
-    return addFilterConditionInternal(FilterCondition(
-      type: ConditionType.isNull,
-      property: 'revokeContent',
-      value: null,
-    ));
-  }
-
-  QueryBuilder<MessageModel, MessageModel, QAfterFilterCondition>
       revokeContentEqualTo(
-    String? value, {
+    String value, {
     bool caseSensitive = true,
   }) {
     return addFilterConditionInternal(FilterCondition(
@@ -1704,7 +1715,7 @@ extension MessageModelQueryFilter
 
   QueryBuilder<MessageModel, MessageModel, QAfterFilterCondition>
       revokeContentGreaterThan(
-    String? value, {
+    String value, {
     bool caseSensitive = true,
     bool include = false,
   }) {
@@ -1719,7 +1730,7 @@ extension MessageModelQueryFilter
 
   QueryBuilder<MessageModel, MessageModel, QAfterFilterCondition>
       revokeContentLessThan(
-    String? value, {
+    String value, {
     bool caseSensitive = true,
     bool include = false,
   }) {
@@ -1734,8 +1745,8 @@ extension MessageModelQueryFilter
 
   QueryBuilder<MessageModel, MessageModel, QAfterFilterCondition>
       revokeContentBetween(
-    String? lower,
-    String? upper, {
+    String lower,
+    String upper, {
     bool caseSensitive = true,
     bool includeLower = true,
     bool includeUpper = true,
@@ -1903,16 +1914,7 @@ extension MessageModelQueryFilter
   }
 
   QueryBuilder<MessageModel, MessageModel, QAfterFilterCondition>
-      sendStatusIsNull() {
-    return addFilterConditionInternal(FilterCondition(
-      type: ConditionType.isNull,
-      property: 'sendStatus',
-      value: null,
-    ));
-  }
-
-  QueryBuilder<MessageModel, MessageModel, QAfterFilterCondition>
-      sendStatusEqualTo(int? value) {
+      sendStatusEqualTo(int value) {
     return addFilterConditionInternal(FilterCondition(
       type: ConditionType.eq,
       property: 'sendStatus',
@@ -1922,7 +1924,7 @@ extension MessageModelQueryFilter
 
   QueryBuilder<MessageModel, MessageModel, QAfterFilterCondition>
       sendStatusGreaterThan(
-    int? value, {
+    int value, {
     bool include = false,
   }) {
     return addFilterConditionInternal(FilterCondition(
@@ -1935,7 +1937,7 @@ extension MessageModelQueryFilter
 
   QueryBuilder<MessageModel, MessageModel, QAfterFilterCondition>
       sendStatusLessThan(
-    int? value, {
+    int value, {
     bool include = false,
   }) {
     return addFilterConditionInternal(FilterCondition(
@@ -1948,8 +1950,8 @@ extension MessageModelQueryFilter
 
   QueryBuilder<MessageModel, MessageModel, QAfterFilterCondition>
       sendStatusBetween(
-    int? lower,
-    int? upper, {
+    int lower,
+    int upper, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
@@ -2663,11 +2665,11 @@ extension MessageModelQueryProperty
     return addPropertyNameInternal('id');
   }
 
-  QueryBuilder<MessageModel, bool?, QQueryOperations> markReadProperty() {
+  QueryBuilder<MessageModel, bool, QQueryOperations> markReadProperty() {
     return addPropertyNameInternal('markRead');
   }
 
-  QueryBuilder<MessageModel, bool?, QQueryOperations> markRevokeProperty() {
+  QueryBuilder<MessageModel, bool, QQueryOperations> markRevokeProperty() {
     return addPropertyNameInternal('markRevoke');
   }
 
@@ -2681,7 +2683,7 @@ extension MessageModelQueryProperty
     return addPropertyNameInternal('offlinePush');
   }
 
-  QueryBuilder<MessageModel, int?, QQueryOperations> readCountProperty() {
+  QueryBuilder<MessageModel, int, QQueryOperations> readCountProperty() {
     return addPropertyNameInternal('readCount');
   }
 
@@ -2689,8 +2691,7 @@ extension MessageModelQueryProperty
     return addPropertyNameInternal('receiveID');
   }
 
-  QueryBuilder<MessageModel, String?, QQueryOperations>
-      revokeContentProperty() {
+  QueryBuilder<MessageModel, String, QQueryOperations> revokeContentProperty() {
     return addPropertyNameInternal('revokeContent');
   }
 
@@ -2698,7 +2699,7 @@ extension MessageModelQueryProperty
     return addPropertyNameInternal('sendID');
   }
 
-  QueryBuilder<MessageModel, int?, QQueryOperations> sendStatusProperty() {
+  QueryBuilder<MessageModel, int, QQueryOperations> sendStatusProperty() {
     return addPropertyNameInternal('sendStatus');
   }
 

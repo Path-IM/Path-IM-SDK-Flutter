@@ -15,7 +15,7 @@ extension GetConversationModelCollection on Isar {
 const ConversationModelSchema = CollectionSchema(
   name: 'ConversationModel',
   schema:
-      '{"name":"ConversationModel","idName":"id","properties":[{"name":"conversationID","type":"String"},{"name":"conversationType","type":"Long"},{"name":"draftText","type":"String"},{"name":"isPinned","type":"Bool"},{"name":"message","type":"String"},{"name":"messageTime","type":"Long"},{"name":"receiveID","type":"String"},{"name":"unreadCount","type":"Long"}],"indexes":[{"name":"conversationID","unique":false,"properties":[{"name":"conversationID","type":"Hash","caseSensitive":true}]}],"links":[]}',
+      '{"name":"ConversationModel","idName":"id","properties":[{"name":"conversationID","type":"String"},{"name":"conversationType","type":"Long"},{"name":"draftText","type":"String"},{"name":"isPinned","type":"Bool"},{"name":"message","type":"String"},{"name":"messageTime","type":"Long"},{"name":"receiveID","type":"String"},{"name":"unreadCount","type":"Long"}],"indexes":[{"name":"conversationID","unique":false,"properties":[{"name":"conversationID","type":"Hash","caseSensitive":true}]},{"name":"unreadCount","unique":false,"properties":[{"name":"unreadCount","type":"Value","caseSensitive":false}]}],"links":[]}',
   idName: 'id',
   propertyIds: {
     'conversationID': 0,
@@ -28,10 +28,13 @@ const ConversationModelSchema = CollectionSchema(
     'unreadCount': 7
   },
   listProperties: {},
-  indexIds: {'conversationID': 0},
+  indexIds: {'conversationID': 0, 'unreadCount': 1},
   indexValueTypes: {
     'conversationID': [
       IndexValueType.stringHash,
+    ],
+    'unreadCount': [
+      IndexValueType.long,
     ]
   },
   linkIds: {},
@@ -122,12 +125,12 @@ ConversationModel _conversationModelDeserializeNative(
     conversationType: reader.readLong(offsets[1]),
     draftText: _conversationModelDraftTextConverter
         .fromIsar(reader.readString(offsets[2])),
-    isPinned: reader.readBoolOrNull(offsets[3]),
+    isPinned: reader.readBool(offsets[3]),
     message: _conversationModelMessageConverter
         .fromIsar(reader.readString(offsets[4])),
-    messageTime: reader.readLongOrNull(offsets[5]),
+    messageTime: reader.readLong(offsets[5]),
     receiveID: reader.readString(offsets[6]),
-    unreadCount: reader.readLongOrNull(offsets[7]),
+    unreadCount: reader.readLong(offsets[7]),
   );
   object.id = id;
   return object;
@@ -146,16 +149,16 @@ P _conversationModelDeserializePropNative<P>(
       return (_conversationModelDraftTextConverter
           .fromIsar(reader.readString(offset))) as P;
     case 3:
-      return (reader.readBoolOrNull(offset)) as P;
+      return (reader.readBool(offset)) as P;
     case 4:
       return (_conversationModelMessageConverter
           .fromIsar(reader.readString(offset))) as P;
     case 5:
-      return (reader.readLongOrNull(offset)) as P;
+      return (reader.readLong(offset)) as P;
     case 6:
       return (reader.readString(offset)) as P;
     case 7:
-      return (reader.readLongOrNull(offset)) as P;
+      return (reader.readLong(offset)) as P;
     default:
       throw 'Illegal propertyIndex';
   }
@@ -186,12 +189,14 @@ ConversationModel _conversationModelDeserializeWeb(
         double.negativeInfinity,
     draftText: _conversationModelDraftTextConverter
         .fromIsar(IsarNative.jsObjectGet(jsObj, 'draftText') ?? ''),
-    isPinned: IsarNative.jsObjectGet(jsObj, 'isPinned'),
+    isPinned: IsarNative.jsObjectGet(jsObj, 'isPinned') ?? false,
     message: _conversationModelMessageConverter
         .fromIsar(IsarNative.jsObjectGet(jsObj, 'message') ?? ''),
-    messageTime: IsarNative.jsObjectGet(jsObj, 'messageTime'),
+    messageTime:
+        IsarNative.jsObjectGet(jsObj, 'messageTime') ?? double.negativeInfinity,
     receiveID: IsarNative.jsObjectGet(jsObj, 'receiveID') ?? '',
-    unreadCount: IsarNative.jsObjectGet(jsObj, 'unreadCount'),
+    unreadCount:
+        IsarNative.jsObjectGet(jsObj, 'unreadCount') ?? double.negativeInfinity,
   );
   object.id = IsarNative.jsObjectGet(jsObj, 'id');
   return object;
@@ -210,16 +215,18 @@ P _conversationModelDeserializePropWeb<P>(Object jsObj, String propertyName) {
     case 'id':
       return (IsarNative.jsObjectGet(jsObj, 'id')) as P;
     case 'isPinned':
-      return (IsarNative.jsObjectGet(jsObj, 'isPinned')) as P;
+      return (IsarNative.jsObjectGet(jsObj, 'isPinned') ?? false) as P;
     case 'message':
       return (_conversationModelMessageConverter
           .fromIsar(IsarNative.jsObjectGet(jsObj, 'message') ?? '')) as P;
     case 'messageTime':
-      return (IsarNative.jsObjectGet(jsObj, 'messageTime')) as P;
+      return (IsarNative.jsObjectGet(jsObj, 'messageTime') ??
+          double.negativeInfinity) as P;
     case 'receiveID':
       return (IsarNative.jsObjectGet(jsObj, 'receiveID') ?? '') as P;
     case 'unreadCount':
-      return (IsarNative.jsObjectGet(jsObj, 'unreadCount')) as P;
+      return (IsarNative.jsObjectGet(jsObj, 'unreadCount') ??
+          double.negativeInfinity) as P;
     default:
       throw 'Illegal propertyName';
   }
@@ -238,6 +245,12 @@ extension ConversationModelQueryWhereSort
       anyConversationID() {
     return addWhereClauseInternal(
         const IndexWhereClause.any(indexName: 'conversationID'));
+  }
+
+  QueryBuilder<ConversationModel, ConversationModel, QAfterWhere>
+      anyUnreadCount() {
+    return addWhereClauseInternal(
+        const IndexWhereClause.any(indexName: 'unreadCount'));
   }
 }
 
@@ -330,6 +343,79 @@ extension ConversationModelQueryWhere
         includeUpper: false,
       ));
     }
+  }
+
+  QueryBuilder<ConversationModel, ConversationModel, QAfterWhereClause>
+      unreadCountEqualTo(int unreadCount) {
+    return addWhereClauseInternal(IndexWhereClause.equalTo(
+      indexName: 'unreadCount',
+      value: [unreadCount],
+    ));
+  }
+
+  QueryBuilder<ConversationModel, ConversationModel, QAfterWhereClause>
+      unreadCountNotEqualTo(int unreadCount) {
+    if (whereSortInternal == Sort.asc) {
+      return addWhereClauseInternal(IndexWhereClause.lessThan(
+        indexName: 'unreadCount',
+        upper: [unreadCount],
+        includeUpper: false,
+      )).addWhereClauseInternal(IndexWhereClause.greaterThan(
+        indexName: 'unreadCount',
+        lower: [unreadCount],
+        includeLower: false,
+      ));
+    } else {
+      return addWhereClauseInternal(IndexWhereClause.greaterThan(
+        indexName: 'unreadCount',
+        lower: [unreadCount],
+        includeLower: false,
+      )).addWhereClauseInternal(IndexWhereClause.lessThan(
+        indexName: 'unreadCount',
+        upper: [unreadCount],
+        includeUpper: false,
+      ));
+    }
+  }
+
+  QueryBuilder<ConversationModel, ConversationModel, QAfterWhereClause>
+      unreadCountGreaterThan(
+    int unreadCount, {
+    bool include = false,
+  }) {
+    return addWhereClauseInternal(IndexWhereClause.greaterThan(
+      indexName: 'unreadCount',
+      lower: [unreadCount],
+      includeLower: include,
+    ));
+  }
+
+  QueryBuilder<ConversationModel, ConversationModel, QAfterWhereClause>
+      unreadCountLessThan(
+    int unreadCount, {
+    bool include = false,
+  }) {
+    return addWhereClauseInternal(IndexWhereClause.lessThan(
+      indexName: 'unreadCount',
+      upper: [unreadCount],
+      includeUpper: include,
+    ));
+  }
+
+  QueryBuilder<ConversationModel, ConversationModel, QAfterWhereClause>
+      unreadCountBetween(
+    int lowerUnreadCount,
+    int upperUnreadCount, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return addWhereClauseInternal(IndexWhereClause.between(
+      indexName: 'unreadCount',
+      lower: [lowerUnreadCount],
+      includeLower: includeLower,
+      upper: [upperUnreadCount],
+      includeUpper: includeUpper,
+    ));
   }
 }
 
@@ -661,16 +747,7 @@ extension ConversationModelQueryFilter
   }
 
   QueryBuilder<ConversationModel, ConversationModel, QAfterFilterCondition>
-      isPinnedIsNull() {
-    return addFilterConditionInternal(FilterCondition(
-      type: ConditionType.isNull,
-      property: 'isPinned',
-      value: null,
-    ));
-  }
-
-  QueryBuilder<ConversationModel, ConversationModel, QAfterFilterCondition>
-      isPinnedEqualTo(bool? value) {
+      isPinnedEqualTo(bool value) {
     return addFilterConditionInternal(FilterCondition(
       type: ConditionType.eq,
       property: 'isPinned',
@@ -786,16 +863,7 @@ extension ConversationModelQueryFilter
   }
 
   QueryBuilder<ConversationModel, ConversationModel, QAfterFilterCondition>
-      messageTimeIsNull() {
-    return addFilterConditionInternal(FilterCondition(
-      type: ConditionType.isNull,
-      property: 'messageTime',
-      value: null,
-    ));
-  }
-
-  QueryBuilder<ConversationModel, ConversationModel, QAfterFilterCondition>
-      messageTimeEqualTo(int? value) {
+      messageTimeEqualTo(int value) {
     return addFilterConditionInternal(FilterCondition(
       type: ConditionType.eq,
       property: 'messageTime',
@@ -805,7 +873,7 @@ extension ConversationModelQueryFilter
 
   QueryBuilder<ConversationModel, ConversationModel, QAfterFilterCondition>
       messageTimeGreaterThan(
-    int? value, {
+    int value, {
     bool include = false,
   }) {
     return addFilterConditionInternal(FilterCondition(
@@ -818,7 +886,7 @@ extension ConversationModelQueryFilter
 
   QueryBuilder<ConversationModel, ConversationModel, QAfterFilterCondition>
       messageTimeLessThan(
-    int? value, {
+    int value, {
     bool include = false,
   }) {
     return addFilterConditionInternal(FilterCondition(
@@ -831,8 +899,8 @@ extension ConversationModelQueryFilter
 
   QueryBuilder<ConversationModel, ConversationModel, QAfterFilterCondition>
       messageTimeBetween(
-    int? lower,
-    int? upper, {
+    int lower,
+    int upper, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
@@ -953,16 +1021,7 @@ extension ConversationModelQueryFilter
   }
 
   QueryBuilder<ConversationModel, ConversationModel, QAfterFilterCondition>
-      unreadCountIsNull() {
-    return addFilterConditionInternal(FilterCondition(
-      type: ConditionType.isNull,
-      property: 'unreadCount',
-      value: null,
-    ));
-  }
-
-  QueryBuilder<ConversationModel, ConversationModel, QAfterFilterCondition>
-      unreadCountEqualTo(int? value) {
+      unreadCountEqualTo(int value) {
     return addFilterConditionInternal(FilterCondition(
       type: ConditionType.eq,
       property: 'unreadCount',
@@ -972,7 +1031,7 @@ extension ConversationModelQueryFilter
 
   QueryBuilder<ConversationModel, ConversationModel, QAfterFilterCondition>
       unreadCountGreaterThan(
-    int? value, {
+    int value, {
     bool include = false,
   }) {
     return addFilterConditionInternal(FilterCondition(
@@ -985,7 +1044,7 @@ extension ConversationModelQueryFilter
 
   QueryBuilder<ConversationModel, ConversationModel, QAfterFilterCondition>
       unreadCountLessThan(
-    int? value, {
+    int value, {
     bool include = false,
   }) {
     return addFilterConditionInternal(FilterCondition(
@@ -998,8 +1057,8 @@ extension ConversationModelQueryFilter
 
   QueryBuilder<ConversationModel, ConversationModel, QAfterFilterCondition>
       unreadCountBetween(
-    int? lower,
-    int? upper, {
+    int lower,
+    int upper, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
@@ -1269,7 +1328,7 @@ extension ConversationModelQueryProperty
     return addPropertyNameInternal('id');
   }
 
-  QueryBuilder<ConversationModel, bool?, QQueryOperations> isPinnedProperty() {
+  QueryBuilder<ConversationModel, bool, QQueryOperations> isPinnedProperty() {
     return addPropertyNameInternal('isPinned');
   }
 
@@ -1278,8 +1337,7 @@ extension ConversationModelQueryProperty
     return addPropertyNameInternal('message');
   }
 
-  QueryBuilder<ConversationModel, int?, QQueryOperations>
-      messageTimeProperty() {
+  QueryBuilder<ConversationModel, int, QQueryOperations> messageTimeProperty() {
     return addPropertyNameInternal('messageTime');
   }
 
@@ -1288,8 +1346,7 @@ extension ConversationModelQueryProperty
     return addPropertyNameInternal('receiveID');
   }
 
-  QueryBuilder<ConversationModel, int?, QQueryOperations>
-      unreadCountProperty() {
+  QueryBuilder<ConversationModel, int, QQueryOperations> unreadCountProperty() {
     return addPropertyNameInternal('unreadCount');
   }
 }

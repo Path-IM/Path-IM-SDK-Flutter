@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:isar/isar.dart';
 import 'package:path_im_core_flutter/path_im_core_flutter.dart';
+import 'package:path_im_sdk_flutter/src/constant/send_status.dart';
 import 'package:path_im_sdk_flutter/src/model/converter/message_converter.dart';
 import 'package:path_im_sdk_flutter/src/tool/sdk_tool.dart';
 
@@ -11,6 +12,7 @@ class MessageModel {
   @Id()
   int? id;
 
+  @Index()
   String clientMsgID;
   String? serverMsgID;
   @Index()
@@ -30,11 +32,11 @@ class MessageModel {
   OfflinePushModel? offlinePush;
   @MsgOptionsConverter()
   MsgOptionsModel msgOptions;
-  int? sendStatus;
-  bool? markRead;
-  int? readCount;
-  bool? markRevoke;
-  String? revokeContent;
+  int sendStatus;
+  bool markRead;
+  int readCount;
+  bool markRevoke;
+  String revokeContent;
 
   MessageModel({
     required this.clientMsgID,
@@ -51,11 +53,11 @@ class MessageModel {
     this.seq,
     this.offlinePush,
     required this.msgOptions,
-    this.sendStatus,
-    this.markRead,
-    this.readCount,
-    this.markRevoke,
-    this.revokeContent,
+    this.sendStatus = SendStatus.sending,
+    this.markRead = false,
+    this.readCount = 0,
+    this.markRevoke = false,
+    this.revokeContent = "",
   });
 
   static MessageModel fromProtobuf(MsgData msg, String conversationID) {
@@ -102,9 +104,9 @@ class MessageModel {
       offlinePush: OfflinePushModel.fromJson(map["offlinePush"]),
       msgOptions: MsgOptionsModel.fromJson(map["msgOptions"]),
       sendStatus: map["sendStatus"],
-      markRead: map["markRead"] == 1,
+      markRead: map["markRead"],
       readCount: map["readCount"],
-      markRevoke: map["markRevoke"] == 1,
+      markRevoke: map["markRevoke"],
       revokeContent: map["revokeContent"],
     );
   }
@@ -133,10 +135,10 @@ class MessageModel {
           ).toJson(),
       "msgOptions": msgOptions.toJson(),
       "sendStatus": sendStatus,
-      "markRead": markRead ?? 0,
-      "readCount": readCount ?? 0,
-      "markRevoke": markRevoke ?? 0,
-      "revokeContent": revokeContent ?? "",
+      "markRead": markRead,
+      "readCount": readCount,
+      "markRevoke": markRevoke,
+      "revokeContent": revokeContent,
     };
   }
 }

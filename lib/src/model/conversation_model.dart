@@ -16,21 +16,22 @@ class ConversationModel {
   String receiveID;
   @MessageConverter()
   MessageModel? message;
-  int? messageTime;
-  int? unreadCount;
+  int messageTime;
+  @Index()
+  int unreadCount;
   @DraftTextConverter()
   DraftTextModel? draftText;
-  bool? isPinned;
+  bool isPinned;
 
   ConversationModel({
     required this.conversationID,
     required this.conversationType,
     required this.receiveID,
     this.message,
-    this.messageTime,
-    this.unreadCount,
+    this.messageTime = 0,
+    this.unreadCount = 0,
     this.draftText,
-    this.isPinned,
+    this.isPinned = false,
   });
 
   static ConversationModel fromJsonMap(Map<String, dynamic> map) =>
@@ -46,7 +47,7 @@ class ConversationModel {
         draftText: map["draftText"].isNotEmpty
             ? DraftTextModel.fromJson(map["draftText"])
             : null,
-        isPinned: map["isPinned"] == 1,
+        isPinned: map["isPinned"],
       );
 
   Map<String, dynamic> toJsonMap() => {
@@ -54,10 +55,10 @@ class ConversationModel {
         "conversationType": conversationType,
         "receiveID": receiveID,
         "message": message?.toJson() ?? "",
-        "messageTime": messageTime ?? 0,
-        "unreadCount": unreadCount ?? 0,
+        "messageTime": messageTime,
+        "unreadCount": unreadCount,
         "draftText": draftText?.toJson() ?? "",
-        "isPinned": isPinned == true ? 1 : 0,
+        "isPinned": isPinned,
       };
 }
 

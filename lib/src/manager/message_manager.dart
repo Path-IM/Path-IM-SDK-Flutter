@@ -3,7 +3,6 @@ import 'package:path_im_sdk_flutter/src/constant/content_type.dart';
 import 'package:path_im_sdk_flutter/src/manager/sdk_manager.dart';
 import 'package:path_im_sdk_flutter/src/model/message_model.dart';
 import 'package:path_im_sdk_flutter/src/model/sdk_content.dart';
-import 'package:path_im_sdk_flutter/src/tool/sdk_tool.dart';
 
 class MessageManager {
   final SDKManager _sdkManager;
@@ -16,7 +15,7 @@ class MessageManager {
     int? offset,
     int? limit,
   }) async {
-    return await getCustomMessageList(
+    return await getCustomList(
       filter: FilterGroup.and([
         FilterCondition(
           type: ConditionType.eq,
@@ -24,13 +23,19 @@ class MessageManager {
           value: conversationID,
         ),
       ]),
+      sortBy: [
+        const SortProperty(
+          property: "serverTime",
+          sort: Sort.desc,
+        ),
+      ],
       offset: offset,
       limit: limit,
     );
   }
 
   /// 获取自定义消息列表
-  Future<List<MessageModel>> getCustomMessageList({
+  Future<List<MessageModel>> getCustomList({
     List<WhereClause> whereClauses = const [],
     bool whereDistinct = false,
     Sort whereSort = Sort.asc,
@@ -262,6 +267,7 @@ class MessageManager {
         .messageModels()
         .filter()
         .conversationIDEqualTo(conversationID)
+        .and()
         .clientMsgIDEqualTo(clientMsgID)
         .findFirst();
     if (message != null) {
