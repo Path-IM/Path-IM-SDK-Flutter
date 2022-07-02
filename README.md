@@ -6,6 +6,12 @@
 
 使用参考：[DEMO](https://github.com/Path-IM/Path-IM-SDK-Flutter-Demo)
 
+它是空安全的，为什么没有空安全标识？
+问题参考：[flutter](https://github.com/flutter/flutter/issues/44937)
+问题参考：[pana](https://github.com/dart-lang/pana/issues/891)
+
+不影响使用和构建，因为它：💪 Building with sound null safety 💪
+
 ## 初始化
 
      PathIMSDK.instance.init(
