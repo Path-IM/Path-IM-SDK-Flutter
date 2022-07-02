@@ -12,6 +12,7 @@
        wsUrl: "",
        autoPull: true, // 自动拉取
        autoPullTime: const Duration(seconds: 25), // 自动拉取时间
+       inspector: false, // 连接数据库
        groupIDCallback: GroupIDCallback(
          onGroupIDList: () async {
            // 返回用户群聊IDList

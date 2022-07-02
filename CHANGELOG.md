@@ -2,6 +2,7 @@
 
 1、Update core version </br>
 2、Replace database with isar </br>
+3、Fix list sort </br>
 
 ## 1.0.0
 
