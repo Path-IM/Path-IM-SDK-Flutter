@@ -33,33 +33,6 @@ class ConversationModel {
     this.draftText,
     this.isPinned = false,
   });
-
-  static ConversationModel fromJsonMap(Map<String, dynamic> map) =>
-      ConversationModel(
-        conversationID: map["conversationID"],
-        conversationType: map["conversationType"],
-        receiveID: map["receiveID"],
-        message: map["message"].isNotEmpty
-            ? MessageModel.fromJson(map["message"])
-            : null,
-        messageTime: map["messageTime"],
-        unreadCount: map["unreadCount"],
-        draftText: map["draftText"].isNotEmpty
-            ? DraftTextModel.fromJson(map["draftText"])
-            : null,
-        isPinned: map["isPinned"],
-      );
-
-  Map<String, dynamic> toJsonMap() => {
-        "conversationID": conversationID,
-        "conversationType": conversationType,
-        "receiveID": receiveID,
-        "message": message?.toJson() ?? "",
-        "messageTime": messageTime,
-        "unreadCount": unreadCount,
-        "draftText": draftText?.toJson() ?? "",
-        "isPinned": isPinned,
-      };
 }
 
 class DraftTextModel {

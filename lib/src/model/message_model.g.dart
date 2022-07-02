@@ -214,7 +214,7 @@ MessageModel _messageModelDeserializeNative(
     sendStatus: reader.readLong(offsets[15]),
     seq: reader.readLongOrNull(offsets[16]),
     serverMsgID: reader.readStringOrNull(offsets[17]),
-    serverTime: reader.readLongOrNull(offsets[18]),
+    serverTime: reader.readLong(offsets[18]),
   );
   object.id = id;
   return object;
@@ -264,7 +264,7 @@ P _messageModelDeserializePropNative<P>(
     case 17:
       return (reader.readStringOrNull(offset)) as P;
     case 18:
-      return (reader.readLongOrNull(offset)) as P;
+      return (reader.readLong(offset)) as P;
     default:
       throw 'Illegal propertyIndex';
   }
@@ -329,7 +329,8 @@ MessageModel _messageModelDeserializeWeb(
         IsarNative.jsObjectGet(jsObj, 'sendStatus') ?? double.negativeInfinity,
     seq: IsarNative.jsObjectGet(jsObj, 'seq'),
     serverMsgID: IsarNative.jsObjectGet(jsObj, 'serverMsgID'),
-    serverTime: IsarNative.jsObjectGet(jsObj, 'serverTime'),
+    serverTime:
+        IsarNative.jsObjectGet(jsObj, 'serverTime') ?? double.negativeInfinity,
   );
   object.id = IsarNative.jsObjectGet(jsObj, 'id');
   return object;
@@ -386,7 +387,8 @@ P _messageModelDeserializePropWeb<P>(Object jsObj, String propertyName) {
     case 'serverMsgID':
       return (IsarNative.jsObjectGet(jsObj, 'serverMsgID')) as P;
     case 'serverTime':
-      return (IsarNative.jsObjectGet(jsObj, 'serverTime')) as P;
+      return (IsarNative.jsObjectGet(jsObj, 'serverTime') ??
+          double.negativeInfinity) as P;
     default:
       throw 'Illegal propertyName';
   }
@@ -2138,16 +2140,7 @@ extension MessageModelQueryFilter
   }
 
   QueryBuilder<MessageModel, MessageModel, QAfterFilterCondition>
-      serverTimeIsNull() {
-    return addFilterConditionInternal(FilterCondition(
-      type: ConditionType.isNull,
-      property: 'serverTime',
-      value: null,
-    ));
-  }
-
-  QueryBuilder<MessageModel, MessageModel, QAfterFilterCondition>
-      serverTimeEqualTo(int? value) {
+      serverTimeEqualTo(int value) {
     return addFilterConditionInternal(FilterCondition(
       type: ConditionType.eq,
       property: 'serverTime',
@@ -2157,7 +2150,7 @@ extension MessageModelQueryFilter
 
   QueryBuilder<MessageModel, MessageModel, QAfterFilterCondition>
       serverTimeGreaterThan(
-    int? value, {
+    int value, {
     bool include = false,
   }) {
     return addFilterConditionInternal(FilterCondition(
@@ -2170,7 +2163,7 @@ extension MessageModelQueryFilter
 
   QueryBuilder<MessageModel, MessageModel, QAfterFilterCondition>
       serverTimeLessThan(
-    int? value, {
+    int value, {
     bool include = false,
   }) {
     return addFilterConditionInternal(FilterCondition(
@@ -2183,8 +2176,8 @@ extension MessageModelQueryFilter
 
   QueryBuilder<MessageModel, MessageModel, QAfterFilterCondition>
       serverTimeBetween(
-    int? lower,
-    int? upper, {
+    int lower,
+    int upper, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
@@ -2711,7 +2704,7 @@ extension MessageModelQueryProperty
     return addPropertyNameInternal('serverMsgID');
   }
 
-  QueryBuilder<MessageModel, int?, QQueryOperations> serverTimeProperty() {
+  QueryBuilder<MessageModel, int, QQueryOperations> serverTimeProperty() {
     return addPropertyNameInternal('serverTime');
   }
 }

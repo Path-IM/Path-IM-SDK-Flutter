@@ -26,7 +26,7 @@ class MessageModel {
   String content;
   List<String>? atUserIDList;
   int clientTime;
-  int? serverTime;
+  int serverTime;
   int? seq;
   @OfflinePushConverter()
   OfflinePushModel? offlinePush;
@@ -49,7 +49,7 @@ class MessageModel {
     required this.content,
     this.atUserIDList,
     required this.clientTime,
-    this.serverTime,
+    required this.serverTime,
     this.seq,
     this.offlinePush,
     required this.msgOptions,
@@ -80,14 +80,7 @@ class MessageModel {
   }
 
   static MessageModel fromJson(String source) {
-    return fromJsonMap(json.decode(source));
-  }
-
-  String toJson() {
-    return json.encode(toJsonMap());
-  }
-
-  static MessageModel fromJsonMap(Map<String, dynamic> map) {
+    Map<String, dynamic> map = json.decode(source);
     return MessageModel(
       clientMsgID: map["clientMsgID"],
       serverMsgID: map["serverMsgID"],
@@ -111,8 +104,8 @@ class MessageModel {
     );
   }
 
-  Map<String, dynamic> toJsonMap() {
-    return {
+  String toJson() {
+    return json.encode({
       "clientMsgID": clientMsgID,
       "serverMsgID": serverMsgID,
       "conversationID": conversationID,
@@ -139,7 +132,7 @@ class MessageModel {
       "readCount": readCount,
       "markRevoke": markRevoke,
       "revokeContent": revokeContent,
-    };
+    });
   }
 }
 

@@ -235,7 +235,7 @@ class SDKManager {
     if (conversation != null) {
       if (msgOptions.updateConversation) {
         conversation.message = message;
-        conversation.messageTime = message.serverTime ?? message.clientTime;
+        conversation.messageTime = message.serverTime;
       }
       if (msgOptions.updateUnreadCount && message.sendID != userID) {
         conversation.unreadCount = ++conversation.unreadCount;
@@ -250,7 +250,7 @@ class SDKManager {
       );
       if (msgOptions.updateConversation) {
         conversation.message = message;
-        conversation.messageTime = message.serverTime ?? message.clientTime;
+        conversation.messageTime = message.serverTime;
       }
       if (msgOptions.updateUnreadCount && message.sendID != userID) {
         conversation.unreadCount = 1;
@@ -362,7 +362,7 @@ class SDKManager {
     Map map = SDKTool.splitConversationID(conversationID);
     int conversationType = map["conversationType"];
     String receiveID = map["receiveID"];
-    int clientTime = DateTime.now().millisecondsSinceEpoch;
+    int timestamp = DateTime.now().millisecondsSinceEpoch;
     MessageModel message = MessageModel(
       clientMsgID: clientMsgID,
       conversationID: conversationID,
@@ -372,7 +372,8 @@ class SDKManager {
       contentType: contentType,
       content: content,
       atUserIDList: atUserIDList,
-      clientTime: clientTime,
+      clientTime: timestamp,
+      serverTime: timestamp,
       offlinePush: offlinePush,
       msgOptions: msgOptions,
     );
@@ -388,7 +389,7 @@ class SDKManager {
       contentType: contentType,
       content: utf8.encode(content),
       atUserIDList: atUserIDList,
-      clientTime: Int64(clientTime),
+      clientTime: Int64(timestamp),
       offlinePush: offlinePush != null
           ? OfflinePush(
               title: offlinePush.title,
