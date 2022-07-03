@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:fixnum/fixnum.dart';
 import 'package:isar/isar.dart';
 import 'package:path_im_core_flutter/path_im_core_flutter.dart';
-import 'package:path_im_sdk_flutter/src/callback/group_id_callback.dart';
 import 'package:path_im_sdk_flutter/src/constant/content_type.dart';
 import 'package:path_im_sdk_flutter/src/constant/send_status.dart';
 import 'package:path_im_sdk_flutter/src/listener/conversation_listener.dart';
@@ -24,7 +23,6 @@ export 'message_manager.dart';
 
 class SDKManager {
   final bool isarInspector;
-  final GroupIDCallback? groupIDCallback;
   final ConversationListener? conversationListener;
   final MessageListener? messageListener;
   final TypingReceiptListener? typingReceiptListener;
@@ -34,7 +32,6 @@ class SDKManager {
 
   SDKManager({
     this.isarInspector = false,
-    this.groupIDCallback,
     this.conversationListener,
     this.messageListener,
     this.typingReceiptListener,
@@ -59,37 +56,6 @@ class SDKManager {
       name: userID,
       inspector: isarInspector,
     );
-    await isar.writeTxn((isar) async {
-      ConfigModel? model = await configModels()
-          .filter()
-          .keyEqualTo(
-            "maxSeq",
-          )
-          .findFirst();
-      if (model == null) {
-        await configModels().put(ConfigModel(
-          key: "maxSeq",
-          value: 0,
-        ));
-      }
-      if (groupIDCallback != null) {
-        List groupIDList = await groupIDCallback!.groupIDList();
-        for (String groupID in groupIDList) {
-          model = await configModels()
-              .filter()
-              .keyEqualTo(
-                "groupMaxSeq_$groupID",
-              )
-              .findFirst();
-          if (model == null) {
-            await configModels().put(ConfigModel(
-              key: "groupMaxSeq_$groupID",
-              value: 0,
-            ));
-          }
-        }
-      }
-    });
   }
 
   /// 配置表
@@ -136,10 +102,7 @@ class SDKManager {
     if (conversationType == ConversationType.single && msg.sendID != userID) {
       receiveID = msg.sendID;
     }
-    int seq = msg.seq;
-    if (seq != 0) {
-      await _pullDefectMessage(conversationType, receiveID, seq);
-    }
+    await _updateSequence(conversationType, receiveID, msg.seq);
     String conversationID = SDKTool.getConversationID(
       conversationType,
       receiveID,
@@ -163,8 +126,8 @@ class SDKManager {
     messageListener?.receiveMsg(message);
   }
 
-  /// 拉取缺失消息
-  Future _pullDefectMessage(
+  /// 更新序列
+  Future _updateSequence(
     int conversationType,
     String receiveID,
     int seq,
@@ -177,10 +140,17 @@ class SDKManager {
             "maxSeq",
           )
           .findFirst();
-      if (model == null) return;
-      PathIMCore.instance.pullSingleMsg(
-        seqList: SDKTool.generateSeqList(seq, model.value),
-      );
+      if (model != null) {
+        PathIMCore.instance.pullSingleMsg(
+          seqList: SDKTool.generateSeqList(seq, model.value),
+        );
+        model.value = seq;
+      } else {
+        model = ConfigModel(
+          key: "maxSeq",
+          value: seq,
+        );
+      }
     } else {
       model = await configModels()
           .filter()
@@ -188,13 +158,19 @@ class SDKManager {
             "groupMaxSeq_$receiveID",
           )
           .findFirst();
-      if (model == null) return;
-      PathIMCore.instance.pullGroupMsg(
-        groupID: receiveID,
-        seqList: SDKTool.generateSeqList(seq, model.value),
-      );
+      if (model != null) {
+        PathIMCore.instance.pullGroupMsg(
+          groupID: receiveID,
+          seqList: SDKTool.generateSeqList(seq, model.value),
+        );
+        model.value = seq;
+      } else {
+        model = ConfigModel(
+          key: "groupMaxSeq_$receiveID",
+          value: seq,
+        );
+      }
     }
-    model.value = seq;
     await configModels().put(model);
   }
 

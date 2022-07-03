@@ -44,7 +44,6 @@ class PathIMSDK {
   }) {
     _sdkManager = SDKManager(
       isarInspector: isarInspector,
-      groupIDCallback: groupIDCallback,
       conversationListener: conversationListener,
       messageListener: messageListener,
       typingReceiptListener: typingReceiptListener,

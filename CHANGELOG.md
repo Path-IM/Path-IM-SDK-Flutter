@@ -1,3 +1,8 @@
+## 1.0.5
+
+1、Update readme </br>
+2、Fix update sequence </br>
+
 ## 1.0.4
 
 1、Format code </br>

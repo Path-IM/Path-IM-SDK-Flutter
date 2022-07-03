@@ -24,17 +24,6 @@ class SDKTool {
     };
   }
 
-  static String decode(dynamic content) {
-    if (content is List<int>) {
-      return utf8.decode(content);
-    }
-    return content;
-  }
-
-  static List<int> encode(String content) {
-    return utf8.encode(content);
-  }
-
   static List<int> generateSeqList(int seq, int? maxSeq) {
     if (maxSeq != null && maxSeq != 0) {
       int diff = seq - maxSeq;
@@ -45,5 +34,16 @@ class SDKTool {
       }
     }
     return [];
+  }
+
+  static List<int> encode(String content) {
+    return utf8.encode(content);
+  }
+
+  static String decode(dynamic content) {
+    if (content is List<int>) {
+      return utf8.decode(content);
+    }
+    return content;
   }
 }
